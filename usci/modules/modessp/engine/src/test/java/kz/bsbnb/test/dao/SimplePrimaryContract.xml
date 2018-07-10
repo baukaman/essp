@@ -1,0 +1,14 @@
+<batch>
+    <info>
+        <report_date>01.01.2018</report_date>
+        <creditor>
+            <code>TTTTKA</code>
+        </creditor>
+    </info>
+    <entities>
+        <primary_contract>
+            <no>KZT.001.TEST</no>
+            <date>01.12.2018</date>
+        </primary_contract>
+    </entities>
+</batch>

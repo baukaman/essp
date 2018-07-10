@@ -1,6 +1,7 @@
 package kz.bsbnb.engine;
 
 import kz.bsbnb.DataEntity;
+import kz.bsbnb.dao.SearchEntityDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,11 +17,12 @@ public class PrepareEngine {
     @Autowired
     NewEntityProcessDecision newEntityProcessDecision;
 
-    public DataEntity process(DataEntity entity){
-        activity.select();
-        System.out.println("prepare for creditorId: "+ savingInfo.getCreditorId());
-        newEntityProcessDecision.process();
-        return entity;
+    @Autowired
+    SearchEntityDao searchEntityDao;
+
+    public DataEntity process(DataEntity entity) {
+        long searchId = searchEntityDao.search(entity);
+        return null;
     }
 
     public PrepareEngine() {

@@ -2,14 +2,12 @@ package kz.bsbnb.dao;
 
 import com.google.common.base.Optional;
 import kz.bsbnb.*;
-import kz.bsbnb.engine.DatabaseActivity;
+import kz.bsbnb.dao.base.BaseDao;
 import kz.bsbnb.usci.eav.model.meta.IMetaAttribute;
 import kz.bsbnb.usci.eav.model.meta.IMetaType;
 import kz.bsbnb.usci.eav.model.meta.impl.MetaClass;
 import kz.bsbnb.usci.eav.model.meta.impl.MetaValue;
 import kz.bsbnb.usci.eav.util.DataUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
@@ -20,19 +18,7 @@ import java.util.*;
 
 @Component
 //@Scope(value = "thread")
-public class DataEntityDao {
-
-    JdbcTemplate jdbcTemplate;
-
-    MetaClassDao metaClassDao;
-
-    @Autowired
-    DatabaseActivity databaseActivity;
-
-    @Autowired
-    public void setDataSource(DataSource source){
-        jdbcTemplate = new JdbcTemplate(source);
-    }
+public class DataEntityDao extends BaseDao {
 
     /**
      * 1) sequence generation technique ???
@@ -52,7 +38,7 @@ public class DataEntityDao {
         buf.append("entity_id,");
         Iterator<String> it = entity.getAttributes().iterator();
         while(it.hasNext()) {
-            buf.append(it.next());
+            buf.append(safeColumnName(it.next()));
             if(it.hasNext())
                 buf.append(",");
         }
@@ -168,11 +154,6 @@ public class DataEntityDao {
             }
         }
         return entity;
-    }
-
-    @Autowired
-    public void setMetaSource(MetaClassDao metaClassDao) {
-        this.metaClassDao = metaClassDao;
     }
 
     public Optional<DataEntity> loadByMaxReportDate(DataEntity entity) {
