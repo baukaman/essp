@@ -1,10 +1,13 @@
 package kz.bsbnb.dao;
 
+import com.google.common.base.Optional;
 import kz.bsbnb.*;
+import kz.bsbnb.engine.DatabaseActivity;
 import kz.bsbnb.usci.eav.model.meta.IMetaAttribute;
 import kz.bsbnb.usci.eav.model.meta.IMetaType;
 import kz.bsbnb.usci.eav.model.meta.impl.MetaClass;
 import kz.bsbnb.usci.eav.model.meta.impl.MetaValue;
+import kz.bsbnb.usci.eav.util.DataUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -22,6 +25,9 @@ public class DataEntityDao {
     JdbcTemplate jdbcTemplate;
 
     MetaClassDao metaClassDao;
+
+    @Autowired
+    DatabaseActivity databaseActivity;
 
     @Autowired
     public void setDataSource(DataSource source){
@@ -108,6 +114,7 @@ public class DataEntityDao {
 
     public DataEntity load(long id, long creditorId, Date reportDate) {
         List<Map<String, Object>> maps = jdbcTemplate.queryForList("SELECT * FROM EAV_BE_ENTITIES where ENTITY_ID = :ENTITY_ID", id);
+        databaseActivity.select();
 
         if(maps.size() < 1)
             throw new RuntimeException("No such entity with id:" + id);
@@ -120,6 +127,9 @@ public class DataEntityDao {
         MetaClass metaClass = metaClassDao.load(classId);
         DataEntity entity = new DataEntity(metaClass)
                 .withReportDate(reportDate);
+        entity.setId(id);
+        entity.setCreditorId(creditorId);
+        entity.setReportDate(reportDate);
         StringBuilder buf = new StringBuilder(100);
         buf.append("SELECT * FROM ");
         buf.append(metaClass.getClassName());
@@ -128,6 +138,7 @@ public class DataEntityDao {
         buf.append(" AND REPORT_DATE = ?");
 
         maps = jdbcTemplate.queryForList(buf.toString(), id, creditorId, reportDate);
+        databaseActivity.select();
         assert maps.size() == 1;
 
         Map<String, Object> next = maps.iterator().next();
@@ -162,5 +173,24 @@ public class DataEntityDao {
     @Autowired
     public void setMetaSource(MetaClassDao metaClassDao) {
         this.metaClassDao = metaClassDao;
+    }
+
+    public Optional<DataEntity> loadByMaxReportDate(DataEntity entity) {
+        StringBuilder buf = new StringBuilder(100);
+        MetaClass metaClass = entity.getMeta();
+        buf.append("SELECT MAX(REPORT_DATE) FROM ");
+        buf.append(metaClass.getClassName());
+        buf.append(" WHERE ENTITY_ID = ?");
+        buf.append(" AND CREDITOR_ID = ?");
+        buf.append(" AND REPORT_DATE <= ?");
+
+
+        Date date = jdbcTemplate.queryForObject(buf.toString(), Date.class, entity.getId(), entity.getCreditorId(), entity.getReportDate());
+        databaseActivity.select();
+        if(date == null)
+            return Optional.absent();
+
+        //date must not be Timestamp, fails in tests
+        return Optional.of(load(entity.getId(), entity.getCreditorId(), DataUtils.convert(date)));
     }
 }

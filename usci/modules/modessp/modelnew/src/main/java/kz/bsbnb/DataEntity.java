@@ -93,7 +93,7 @@ public final class DataEntity {
     }
 
     public Date getReportDate() {
-        return DataUtils.getDate("01.01.2018");
+        return reportDate;
     }
 
     public DataValue getBaseValue(String next) {
@@ -111,5 +111,13 @@ public final class DataEntity {
     public DataEntity withReportDate(Date reportDate) {
         this.reportDate = reportDate;
         return this;
+    }
+
+    public DataEntity clone(){
+        DataEntity ret = new DataEntity(getMeta());
+        ret.setId(getId());
+        ret.setReportDate(getReportDate());
+        ret.setCreditorId(getCreditorId());
+        return ret;
     }
 }
