@@ -38,7 +38,14 @@ public class DataEntityDao extends BaseDao {
         buf.append("entity_id,");
         Iterator<String> it = entity.getAttributes().iterator();
         while(it.hasNext()) {
-            buf.append(safeColumnName(it.next()));
+            String attribute = it.next();
+            IMetaAttribute metaAttribute = meta.getMetaAttribute(attribute);
+            IMetaType metaType = metaAttribute.getMetaType();
+            if(metaType.isComplex()) {
+                buf.append(attribute + "_ID");
+            } else {
+                buf.append(safeColumnName(attribute));
+            }
             if(it.hasNext())
                 buf.append(",");
         }
@@ -51,7 +58,15 @@ public class DataEntityDao extends BaseDao {
         values[i++] = entity.getReportDate();
         values[i++] = entity.getId();
         while(it.hasNext()) {
-            values[i++] = entity.getBaseValue(it.next()).getValue();
+            String attribute = it.next();
+            IMetaAttribute metaAttribute = meta.getMetaAttribute(attribute);
+            IMetaType metaType = metaAttribute.getMetaType();
+            Object value = entity.getBaseValue(attribute).getValue();
+            if(metaType.isComplex()) {
+                values[i++] = ((DataEntity) value).getId();
+            } else {
+                values[i++] = value;
+            }
             buf.append("?");
             if(it.hasNext())
                 buf.append(",");
