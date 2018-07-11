@@ -27,8 +27,9 @@ public class PrepareEngine {
 
     public DataEntity process(DataEntity entity) {
         MetaClass metaClass = entity.getMeta();
-        DataEntity ret = new DataEntity(metaClass);
+        DataEntity ret = entity.clone();
 
+        boolean childKeysFound = true;
         //prepare children first
         for (String attribute : entity.getAttributes()) {
             IMetaAttribute metaAttribute = metaClass.getMetaAttribute(attribute);
@@ -38,11 +39,18 @@ public class PrepareEngine {
             if (!metaAttribute.isKey())
                 continue;
 
-            if(metaType.isComplex())
-                ret.setDataValue(attribute, new DataComplexValue(process(((DataEntity) baseValue.getValue()))));
+            if(metaType.isComplex()) {
+                DataEntity childEntity = process((DataEntity) baseValue.getValue());
+                ret.setDataValue(attribute, new DataComplexValue(childEntity));
+                if(childEntity.getId() < 1)
+                    childKeysFound = false;
+            }
         }
-        long searchId = searchEntityDao.search(ret);
-        ret.setId(searchId);
+
+        if(childKeysFound) {
+            long searchId = searchEntityDao.search(ret);
+            ret.setId(searchId);
+        }
         return ret;
     }
 

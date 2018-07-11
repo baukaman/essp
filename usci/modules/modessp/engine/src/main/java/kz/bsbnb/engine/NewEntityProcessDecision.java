@@ -2,13 +2,18 @@ package kz.bsbnb.engine;
 
 import kz.bsbnb.DataEntity;
 import kz.bsbnb.dao.DataEntityDao;
+import kz.bsbnb.usci.eav.model.meta.IMetaAttribute;
+import kz.bsbnb.usci.eav.model.meta.IMetaType;
+import kz.bsbnb.usci.eav.model.meta.impl.MetaClass;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 @Component
-public class NewEntityProcessDecision {
-    DataEntity savingEntity;
+@Scope("prototype")
+public class NewEntityProcessDecision extends Decision {
 
     @Autowired
     SavingInfo savingInfo;
@@ -16,26 +21,32 @@ public class NewEntityProcessDecision {
     @Autowired
     DatabaseActivity activity;
 
-    public void process() {
-        activity.select();
-        System.out.println("NewEntityProcessorDecision: creditorId = " + savingInfo.getCreditorId() + " " + savingInfo.getId());
-        //System.out.println(Thread.currentThread().getName());
-        //myDao.save(savingEntity);
+    @Autowired
+    DataEntityDao dataEntityDao;
 
-        //then cascade to children
-        /*
-              for(String attribute: savingEntity.attributes()) {
-                  IMetaAttribute attribute = savingEntity.get(attribute);
-                  MetaType metaType = attribute.getType();
-                  if(metaType.isComplex()) {
-                    new LoadHistoryDecision()
-                            .withSavingEntity(entity.get(attribute));
-                  }
+    @Autowired
+    ApplicationContext context;
 
-              }
-         */
+    @Override
+    public DataEntity make() {
+        MetaClass metaClass = savingEntity.getMeta();
 
+        for (String attribute : savingEntity.getAttributes()) {
+            IMetaAttribute metaAttribute = metaClass.getMetaAttribute(attribute);
+            IMetaType metaType = metaAttribute.getMetaType();
+            Object value = savingEntity.getBaseValue(attribute).getValue();
 
+            if(metaType.isComplex()) {
+                DataEntity childEntity = (DataEntity) value;
+                if(childEntity.getId() < 1) {
+                    NewEntityProcessDecision newEntityProcessDecision = context.getBean(NewEntityProcessDecision.class);
+                    newEntityProcessDecision.withSaving(childEntity).make();
+                }
 
+            }
+        }
+
+        dataEntityDao.insert(savingEntity);
+        return savingEntity;
     }
 }

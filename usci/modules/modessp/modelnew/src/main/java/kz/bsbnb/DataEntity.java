@@ -113,11 +113,12 @@ public final class DataEntity {
         return this;
     }
 
-    public DataEntity clone(){
+    public DataEntity clone() {
         DataEntity ret = new DataEntity(getMeta());
         ret.setId(getId());
         ret.setReportDate(getReportDate());
         ret.setCreditorId(getCreditorId());
+        ret.values = new HashMap<>(values);
         return ret;
     }
 }

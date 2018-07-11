@@ -9,33 +9,39 @@ import org.springframework.stereotype.Component;
 public class DatabaseActivity {
 
     private int numberOfSelects = 0;
+    private int numberOfInserts;
+    protected int numberOfUpdates;
 
     public int numberOfSelects() {
         return numberOfSelects;
     }
 
     public int numberOfInserts() {
-        return 0;
+        return numberOfInserts;
     }
 
     public int numberOfUpdates() {
-        return 0;
-    }
-
-    public int noActions() {
-        return 0;
+        return numberOfUpdates;
     }
 
     public void select() {
         numberOfSelects ++;
     }
 
+    public void insert() {
+        numberOfInserts++;
+    }
+
+    public void update() {
+        numberOfUpdates++;
+    }
+
     public DatabaseActivity() {
-        //System.out.println(Thread.currentThread().getName());
-        //System.out.println("const");
     }
 
     public void reset() {
         numberOfSelects = 0;
+        numberOfInserts = 0;
+        numberOfUpdates = 0;
     }
 }

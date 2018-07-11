@@ -6,11 +6,13 @@ import kz.bsbnb.engine.DatabaseActivity;
 import kz.bsbnb.reader.test.ThreePartReader;
 import kz.bsbnb.testing.FunctionalTest;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -30,51 +32,28 @@ public class BootstrapEngineTest extends FunctionalTest {
 
     ThreePartReader reader = new ThreePartReader();
 
+    @Autowired
+    DatabaseActivity databaseActivity;
+
+    @Before
+    public void setUp() throws Exception {
+        databaseActivity.reset();
+    }
+
     @Test
+    @Transactional
     public void shouldSaveEntity() throws Exception {
-        InputStream inputStream = getInputStream("basic/A.xml");
+        InputStream inputStream = getInputStream("dao/SearchCredit.xml");
         final DataEntity entity = reader.withSource(inputStream)
                 .withMeta(metaCredit)
                 .read();
 
-        //DatabaseActivity activities = engine.getDatabaseActivity();
+        engine.process(entity);
 
-        //DataEntity savedEntity = engine.process(entity);
-        final DataEntity[] entities = new DataEntity[20];
-        for (int i = 0; i < 20; i++) {
-            entities[i] = new DataEntity(metaCredit);
-            entities[i].setCreditorId(4414L + i);
-        }
-
-        ExecutorService service = Executors.newFixedThreadPool(6);
-
-        final Random r = new Random();
-        for(int i=0;i<20;i++) {
-            final int j = i;
-            service.submit(new Runnable() {
-                @Override
-                public void run() {
-                    engine.process(entities[j]);
-                    try {
-                        Thread.sleep(1000 + r.nextInt(1000));
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    //System.out.println("finished");
-                }
-            });
-        }
-
-        service.shutdown();
-        boolean b = service.awaitTermination(1000, TimeUnit.SECONDS);
-        System.out.println(b);
-
-
-        /*Assert.assertEquals(3, activities.numberOfSelects());
-        Assert.assertEquals(4, activities.numberOfInserts());
-        Assert.assertEquals(2, activities.numberOfUpdates());
-        Assert.assertEquals(1, activities.noActions());
-        Assert.assertTrue(savedEntity.getId() > 0);*/
+        Assert.assertEquals(1, databaseActivity.numberOfSelects());
+        Assert.assertEquals(4, databaseActivity.numberOfInserts());
+        Assert.assertEquals(0, databaseActivity.numberOfUpdates());
+        Assert.assertTrue(entity.getId() > 0);
     }
 
     @Test

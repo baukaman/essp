@@ -3,11 +3,13 @@ package kz.bsbnb.dao;
 import com.google.common.base.Optional;
 import kz.bsbnb.*;
 import kz.bsbnb.dao.base.BaseDao;
+import kz.bsbnb.engine.SavingInfo;
 import kz.bsbnb.usci.eav.model.meta.IMetaAttribute;
 import kz.bsbnb.usci.eav.model.meta.IMetaType;
 import kz.bsbnb.usci.eav.model.meta.impl.MetaClass;
 import kz.bsbnb.usci.eav.model.meta.impl.MetaValue;
 import kz.bsbnb.usci.eav.util.DataUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
@@ -19,6 +21,10 @@ import java.util.*;
 @Component
 //@Scope(value = "thread")
 public class DataEntityDao extends BaseDao {
+
+
+    @Autowired
+    SavingInfo savingInfo;
 
     /**
      * 1) sequence generation technique ???
@@ -54,8 +60,8 @@ public class DataEntityDao extends BaseDao {
         it = entity.getAttributes().iterator();
         Object[] values = new Object[entity.getAttributes().size() + 3];
         int i = 0;
-        values[i++] = entity.getCreditorId();
-        values[i++] = entity.getReportDate();
+        values[i++] = savingInfo.getCreditorId();
+        values[i++] = savingInfo.getReportDate();
         values[i++] = entity.getId();
         while(it.hasNext()) {
             String attribute = it.next();
@@ -76,6 +82,7 @@ public class DataEntityDao extends BaseDao {
         System.out.println(buf.toString());
 
         jdbcTemplate.update(buf.toString(),values);
+        databaseActivity.insert();
 
     }
 
@@ -106,10 +113,9 @@ public class DataEntityDao extends BaseDao {
         parameters.put("IS_DELETED","0");
         parameters.put("SYSTEM_DATE", new Date());
         Number number = simpleJdbcInsert.executeAndReturnKey(new MapSqlParameterSource(parameters));
+        databaseActivity.insert();
         System.out.println(number.longValue());
         entity.setId(number.longValue());
-
-
     }
 
 

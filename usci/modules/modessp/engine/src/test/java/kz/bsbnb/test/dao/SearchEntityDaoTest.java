@@ -9,6 +9,7 @@ import kz.bsbnb.engine.DatabaseActivity;
 import kz.bsbnb.reader.test.ThreePartReader;
 import kz.bsbnb.testing.FunctionalTest;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,11 @@ public class SearchEntityDaoTest extends FunctionalTest {
     @Autowired
     DatabaseActivity databaseActivity;
 
+    @Before
+    public void setUp() throws Exception {
+        databaseActivity.reset();
+    }
+
     @Test
     @Transactional
     public void testPrimaryContractSearch() throws Exception {
@@ -52,7 +58,6 @@ public class SearchEntityDaoTest extends FunctionalTest {
     @Test
     @Transactional
     public void testCreditSearch() throws Exception {
-        databaseActivity.reset();
         reader = new ThreePartReader()
                 .withSource(getInputStream("dao/SearchCredit.xml"))
                 .withMeta(metaCredit);
@@ -70,5 +75,17 @@ public class SearchEntityDaoTest extends FunctionalTest {
         long searchId = searchEntityDao.search(credit);
         Assert.assertEquals(savedId, searchId);
         Assert.assertEquals(1, databaseActivity.numberOfSelects());
+    }
+
+    @Test
+    @Transactional
+    public void testNoCredit() throws Exception {
+        reader = new ThreePartReader()
+                .withSource(getInputStream("dao/SearchCredit.xml"))
+                .withMeta(metaCredit);
+
+        long searchId = searchEntityDao.search(reader.read());
+        Assert.assertEquals(0, searchId);
+
     }
 }

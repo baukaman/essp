@@ -18,6 +18,9 @@ public class BootstrapEngine {
     @Autowired
     LoadHistoryDecision loadHistoryDecision;
 
+    @Autowired
+    NewEntityProcessDecision newEntityProcessDecision;
+
     @InfoBootstrap
     public DataEntity process(DataEntity entity){
         DataEntity prepared = prepareEngine.process(entity);
@@ -25,7 +28,9 @@ public class BootstrapEngine {
         if(prepared.getId() > 0) {
             return loadHistoryDecision.make(entity);
         } else {
-            throw new UnsupportedOperationException();
+            return newEntityProcessDecision
+                    .withSaving(entity)
+                    .make();
         }
 
 
