@@ -27,6 +27,9 @@ public class PrepareEngineTest extends FunctionalTest {
     @Autowired
     DatabaseActivity databaseActivity;
 
+    @Autowired
+    ThreePartReader reader;
+
     @Before
     public void setUp() throws Exception {
         databaseActivity.reset();
@@ -34,7 +37,7 @@ public class PrepareEngineTest extends FunctionalTest {
 
     @Test
     public void testNoCredit() throws Exception {
-        DataEntity savingEntity = new ThreePartReader()
+        DataEntity savingEntity = reader
                 .withSource(getInputStream("dao/SearchCredit.xml"))
                 .withMeta(metaCredit).read();
 

@@ -3,7 +3,7 @@ package kz.bsbnb.dao;
 import com.google.common.base.Optional;
 import kz.bsbnb.*;
 import kz.bsbnb.dao.base.BaseDao;
-import kz.bsbnb.engine.SavingInfo;
+import kz.bsbnb.SavingInfo;
 import kz.bsbnb.usci.eav.model.meta.IMetaAttribute;
 import kz.bsbnb.usci.eav.model.meta.IMetaType;
 import kz.bsbnb.usci.eav.model.meta.impl.MetaClass;
@@ -14,7 +14,6 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 
-import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.util.*;
 
@@ -32,8 +31,12 @@ public class DataEntityDao extends BaseDao {
      *
      * @param entity
      */
-    public void insert(DataEntity entity) {
+    public void insertNewEntity(DataEntity entity) {
         insertEBE(entity);
+        insert(entity);
+    }
+
+    public void insert(DataEntity entity) {
         MetaClass meta = entity.getMeta();
         StringBuilder buf = new StringBuilder(100);
         buf.append("insert into ")
@@ -83,7 +86,6 @@ public class DataEntityDao extends BaseDao {
 
         jdbcTemplate.update(buf.toString(),values);
         databaseActivity.insert();
-
     }
 
     private void insertEBE(DataEntity entity) {
@@ -172,6 +174,13 @@ public class DataEntityDao extends BaseDao {
 
                     }
                 }
+            //complex values
+            } else if (next.get(attribute + "_ID") != null) {
+                //collision with column
+                if(attribute.equalsIgnoreCase("creditor"))
+                    continue;
+                Long childId = ((BigDecimal) next.get(attribute + "_ID")).longValue();
+                entity.setDataValue(attribute, new DataComplexValue(load(childId, creditorId, reportDate)));
             }
         }
         return entity;

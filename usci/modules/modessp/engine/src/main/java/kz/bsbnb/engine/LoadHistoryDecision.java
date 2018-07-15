@@ -4,11 +4,13 @@ import com.google.common.base.Optional;
 import kz.bsbnb.DataEntity;
 import kz.bsbnb.dao.DataEntityDao;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 @Component
-public class LoadHistoryDecision {
-    DataEntity entity = new DataEntity(null);
+@Scope("prototype")
+public class LoadHistoryDecision extends Decision {
+    //DataEntity entity = new DataEntity(null);
 
     @Autowired
     FirstClassProcessorDecision firstClassProcessorDecision;
@@ -16,17 +18,18 @@ public class LoadHistoryDecision {
     @Autowired
     DataEntityDao dao;
 
-    public DataEntity make(DataEntity entity) {
-        Optional<DataEntity> loadedEntityOptional = dao.loadByMaxReportDate(entity);
+    @Override
+    public DataEntity make() {
+        Optional<DataEntity> loadedEntityOptional = dao.loadByMaxReportDate(savingEntity);
         DataEntity applied;
 
         if(loadedEntityOptional.isPresent()) {
             DataEntity loadedEntity = loadedEntityOptional.get();
 
-            if (loadedEntity.getReportDate().compareTo(entity.getReportDate()) < 0) {
+            if (loadedEntity.getReportDate().compareTo(savingEntity.getReportDate()) < 0) {
                 applied = firstClassProcessorDecision
                         .withLoaded(loadedEntity)
-                        .withSaving(entity)
+                        .withSaving(savingEntity)
                         .make();
             } else {
                 throw new UnsupportedOperationException();

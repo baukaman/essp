@@ -6,25 +6,21 @@ import kz.bsbnb.DataEntity;
 import kz.bsbnb.dao.DataEntityDao;
 import kz.bsbnb.dao.impl.StaticMetaClassDaoImpl;
 import kz.bsbnb.engine.DatabaseActivity;
-import kz.bsbnb.engine.SavingInfo;
+import kz.bsbnb.SavingInfo;
 import kz.bsbnb.reader.test.ThreePartReader;
-import kz.bsbnb.testing.FunctionalTest;
+import kz.bsbnb.test.EngineTestBase;
 import kz.bsbnb.usci.eav.model.meta.impl.MetaClass;
 import kz.bsbnb.usci.eav.util.DataUtils;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"/applicationContextProp.xml","/applicationContextEngine.xml"})
-public class CreditPersistTest extends FunctionalTest {
+public class CreditPersistTest extends EngineTestBase {
 
     @Autowired
     DataEntityDao entityDao;
 
+    @Autowired
     ThreePartReader reader;
 
     @Autowired
@@ -36,14 +32,12 @@ public class CreditPersistTest extends FunctionalTest {
     @Test
     @Transactional
     public void testInsert() throws Exception {
-        reader = new ThreePartReader()
-                .withSource(getInputStream("dao/SimpleValues.xml"))
-                .withMeta(metaCredit);
+        DataEntity entity = reader.withSource(getInputStream("dao/SimpleValues.xml"))
+                .withMeta(metaCredit).read();
 
         entityDao.setMetaSource(new StaticMetaClassDaoImpl(metaCredit));
 
-        DataEntity entity = reader.read();
-        entityDao.insert(entity);
+        entityDao.insertNewEntity(entity);
         DataEntity loadedEntity = entityDao.load(entity.getId(), entity.getCreditorId(), entity.getReportDate());
         MetaClass meta = loadedEntity.getMeta();
         Assert.assertEquals("credit", meta.getClassName());
@@ -54,14 +48,13 @@ public class CreditPersistTest extends FunctionalTest {
     @Test
     @Transactional
     public void testLoadByMaxRD() throws Exception {
-        reader = new ThreePartReader()
-                .withSource(getInputStream("dao/SimpleValues.xml"))
+        reader.withSource(getInputStream("dao/SimpleValues.xml"))
                 .withMeta(metaCredit);
 
         entityDao.setMetaSource(new StaticMetaClassDaoImpl(metaCredit));
 
         DataEntity entity = reader.read();
-        entityDao.insert(entity);
+        entityDao.insertNewEntity(entity);
         databaseActivity.reset();
 
         DataEntity testEntity = entity.clone();

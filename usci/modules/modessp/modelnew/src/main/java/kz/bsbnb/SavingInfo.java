@@ -1,4 +1,4 @@
-package kz.bsbnb.engine;
+package kz.bsbnb;
 
 import kz.bsbnb.DataEntity;
 import org.springframework.context.annotation.Scope;

@@ -1,10 +1,15 @@
 package kz.bsbnb.engine;
 
 import kz.bsbnb.DataEntity;
+import kz.bsbnb.dao.DataEntityDao;
+import org.springframework.beans.factory.annotation.Autowired;
 
 public class Decision {
     protected DataEntity loadEntity;
     protected DataEntity savingEntity;
+
+    @Autowired
+    DataEntityDao dataEntityDao;
 
     public Decision withLoaded(DataEntity loadEntity) {
         this.loadEntity = loadEntity;

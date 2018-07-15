@@ -3,6 +3,7 @@ package kz.bsbnb.reader.test;
 import kz.bsbnb.DataEntity;
 import kz.bsbnb.reader.RootReader;
 import kz.bsbnb.usci.eav.model.meta.impl.MetaClass;
+import org.springframework.stereotype.Component;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -10,6 +11,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 import java.io.InputStream;
 
+@Component
 public class ThreePartReader {
     XMLEventReader xmlEventReader;
     private MetaClass meta;

@@ -30,7 +30,8 @@ public class BootstrapEngineTest extends FunctionalTest {
     @Autowired
     BootstrapEngine engine;
 
-    ThreePartReader reader = new ThreePartReader();
+    @Autowired
+    ThreePartReader reader;
 
     @Autowired
     DatabaseActivity databaseActivity;
@@ -48,12 +49,12 @@ public class BootstrapEngineTest extends FunctionalTest {
                 .withMeta(metaCredit)
                 .read();
 
-        engine.process(entity);
+        DataEntity processedEntity = engine.process(entity);
 
         Assert.assertEquals(1, databaseActivity.numberOfSelects());
         Assert.assertEquals(4, databaseActivity.numberOfInserts());
         Assert.assertEquals(0, databaseActivity.numberOfUpdates());
-        Assert.assertTrue(entity.getId() > 0);
+        Assert.assertTrue(processedEntity.getId() > 0);
     }
 
     @Test

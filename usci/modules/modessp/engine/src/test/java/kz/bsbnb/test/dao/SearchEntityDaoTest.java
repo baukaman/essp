@@ -1,7 +1,6 @@
 package kz.bsbnb.test.dao;
 
 import kz.bsbnb.DataEntity;
-import kz.bsbnb.DataStringValue;
 import kz.bsbnb.dao.DataEntityDao;
 import kz.bsbnb.dao.SearchEntityDao;
 import kz.bsbnb.dao.impl.StaticMetaClassDaoImpl;
@@ -21,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 @ContextConfiguration(locations = {"/applicationContextProp.xml","/applicationContextEngine.xml"})
 public class SearchEntityDaoTest extends FunctionalTest {
 
+    @Autowired
     ThreePartReader reader;
 
     @Autowired
@@ -41,13 +41,11 @@ public class SearchEntityDaoTest extends FunctionalTest {
     @Transactional
     public void testPrimaryContractSearch() throws Exception {
 
-        reader = new ThreePartReader()
-                .withSource(getInputStream("dao/SimplePrimaryContract.xml"))
-                .withMeta(metaPrimaryContract);
+        reader.withSource(getInputStream("dao/SimplePrimaryContract.xml")).withMeta(metaPrimaryContract);
 
         entityDao.setMetaSource(new StaticMetaClassDaoImpl(metaPrimaryContract));
         DataEntity primaryContract = reader.read();
-        entityDao.insert(primaryContract);
+        entityDao.insertNewEntity(primaryContract);
 
         long id = primaryContract.getId();
         primaryContract.setId(0);
@@ -58,8 +56,7 @@ public class SearchEntityDaoTest extends FunctionalTest {
     @Test
     @Transactional
     public void testCreditSearch() throws Exception {
-        reader = new ThreePartReader()
-                .withSource(getInputStream("dao/SearchCredit.xml"))
+        reader.withSource(getInputStream("dao/SearchCredit.xml"))
                 .withMeta(metaCredit);
 
         entityDao.setMetaSource(new StaticMetaClassDaoImpl(metaCredit));
@@ -67,8 +64,8 @@ public class SearchEntityDaoTest extends FunctionalTest {
         DataEntity primaryContract = (DataEntity) credit.getBaseValue("primary_contract").getValue();
         primaryContract.setReportDate(credit.getReportDate());
         primaryContract.setCreditorId(credit.getCreditorId());
-        entityDao.insert(primaryContract);
-        entityDao.insert(credit);
+        entityDao.insertNewEntity(primaryContract);
+        entityDao.insertNewEntity(credit);
 
         long savedId = credit.getId();
         credit.setId(0);
@@ -80,9 +77,7 @@ public class SearchEntityDaoTest extends FunctionalTest {
     @Test
     @Transactional
     public void testNoCredit() throws Exception {
-        reader = new ThreePartReader()
-                .withSource(getInputStream("dao/SearchCredit.xml"))
-                .withMeta(metaCredit);
+        reader.withSource(getInputStream("dao/SearchCredit.xml")).withMeta(metaCredit);
 
         long searchId = searchEntityDao.search(reader.read());
         Assert.assertEquals(0, searchId);

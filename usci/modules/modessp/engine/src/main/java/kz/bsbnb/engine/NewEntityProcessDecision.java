@@ -1,13 +1,13 @@
 package kz.bsbnb.engine;
 
 import kz.bsbnb.DataEntity;
+import kz.bsbnb.SavingInfo;
 import kz.bsbnb.dao.DataEntityDao;
 import kz.bsbnb.usci.eav.model.meta.IMetaAttribute;
 import kz.bsbnb.usci.eav.model.meta.IMetaType;
 import kz.bsbnb.usci.eav.model.meta.impl.MetaClass;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -46,7 +46,7 @@ public class NewEntityProcessDecision extends Decision {
             }
         }
 
-        dataEntityDao.insert(savingEntity);
+        dataEntityDao.insertNewEntity(savingEntity);
         return savingEntity;
     }
 }
