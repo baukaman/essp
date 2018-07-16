@@ -1,7 +1,9 @@
 package kz.bsbnb.dao;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Strings;
 import kz.bsbnb.*;
+import kz.bsbnb.attribute.EntityAttribute;
 import kz.bsbnb.dao.base.BaseDao;
 import kz.bsbnb.SavingInfo;
 import kz.bsbnb.usci.eav.model.meta.IMetaAttribute;
@@ -39,52 +41,29 @@ public class DataEntityDao extends BaseDao {
     public void insert(DataEntity entity) {
         MetaClass meta = entity.getMeta();
         StringBuilder buf = new StringBuilder(100);
+        List values = new LinkedList();
         buf.append("insert into ")
                 .append(meta.getClassName());
         buf.append(" (");
         buf.append("creditor_id,");
+        values.add(savingInfo.getCreditorId());
         buf.append("report_date,");
+        values.add(savingInfo.getReportDate());
         buf.append("entity_id,");
-        Iterator<String> it = entity.getAttributes().iterator();
-        while(it.hasNext()) {
-            String attribute = it.next();
-            IMetaAttribute metaAttribute = meta.getMetaAttribute(attribute);
-            IMetaType metaType = metaAttribute.getMetaType();
-            if(metaType.isComplex()) {
-                buf.append(attribute + "_ID");
-            } else {
-                buf.append(safeColumnName(attribute));
-            }
-            if(it.hasNext())
+        values.add(entity.getId());
+        Iterator<EntityAttribute> entityIterator = entity.getEntityIterator();
+        while(entityIterator.hasNext()) {
+            EntityAttribute attribute = entityIterator.next();
+            buf.append(attribute.getColumnName());
+            values.add(attribute.getColumnValue());
+            if(entityIterator.hasNext())
                 buf.append(",");
         }
-        buf.append(") values (?,?,?,");
 
-        it = entity.getAttributes().iterator();
-        Object[] values = new Object[entity.getAttributes().size() + 3];
-        int i = 0;
-        values[i++] = savingInfo.getCreditorId();
-        values[i++] = savingInfo.getReportDate();
-        values[i++] = entity.getId();
-        while(it.hasNext()) {
-            String attribute = it.next();
-            IMetaAttribute metaAttribute = meta.getMetaAttribute(attribute);
-            IMetaType metaType = metaAttribute.getMetaType();
-            Object value = entity.getBaseValue(attribute).getValue();
-            if(metaType.isComplex()) {
-                values[i++] = ((DataEntity) value).getId();
-            } else {
-                values[i++] = value;
-            }
-            buf.append("?");
-            if(it.hasNext())
-                buf.append(",");
-        }
-        buf.append(")");
-
+        buf.append(") values (" + Strings.repeat("?, ", values.size() - 1) + "?)");
         System.out.println(buf.toString());
 
-        jdbcTemplate.update(buf.toString(),values);
+        jdbcTemplate.update(buf.toString(),values.toArray());
         databaseActivity.insert();
     }
 
@@ -152,13 +131,13 @@ public class DataEntityDao extends BaseDao {
 
         Map<String, Object> next = maps.iterator().next();
         for (String attribute : metaClass.getAttributeNames()) {
-            if(next.get(attribute) != null) {
+            if(next.get(safeColumnName(attribute)) != null) {
                 IMetaAttribute metaAttribute = metaClass.getMetaAttribute(attribute);
                 IMetaType metaType = metaAttribute.getMetaType();
                 if(!metaType.isComplex()) {
                     if(!metaType.isSet()) {
                         MetaValue metaSimple = (MetaValue) metaType;
-                        Object value = next.get(attribute);
+                        Object value = next.get(safeColumnName(attribute));
                         switch (metaSimple.getTypeCode()) {
                             case DOUBLE:
                                 entity.setDataValue(attribute, new DataDoubleValue(value));
@@ -203,5 +182,36 @@ public class DataEntityDao extends BaseDao {
 
         //date must not be Timestamp, fails in tests
         return Optional.of(load(entity.getId(), entity.getCreditorId(), DataUtils.convert(date)));
+    }
+
+    public void update(DataEntity entity) {
+        StringBuilder buf = new StringBuilder(100);
+        MetaClass metaClass = entity.getMeta();
+        buf.append("update " + metaClass.getClassName() + " set ");
+        List<Object> list = new LinkedList<>();
+
+        Iterator<EntityAttribute> iterator = entity.getEntityIterator();
+        while(iterator.hasNext()) {
+            EntityAttribute entityAttribute = iterator.next();
+            buf.append(entityAttribute.getColumnName() + " = ?");
+            list.add(entityAttribute.getColumnValue());
+            if(iterator.hasNext())
+                buf.append(",");
+        }
+
+        buf.append(" where");
+        buf.append(" entity_id = ?");
+        list.add(entity.getId());
+
+        buf.append(" and creditor_id = ?");
+        list.add(savingInfo.getCreditorId());
+
+        buf.append(" and report_date = ?");
+        list.add(savingInfo.getReportDate());
+
+        int update = jdbcTemplate.update(buf.toString(), list.toArray());
+        System.out.println(buf.toString());
+        databaseActivity.update();
+        assert update == 1;
     }
 }

@@ -5,14 +5,14 @@ import kz.bsbnb.dao.DataEntityDao;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public class Decision {
-    protected DataEntity loadEntity;
+    protected DataEntity loadedEntity;
     protected DataEntity savingEntity;
 
     @Autowired
     DataEntityDao dataEntityDao;
 
     public Decision withLoaded(DataEntity loadEntity) {
-        this.loadEntity = loadEntity;
+        this.loadedEntity = loadEntity;
         return this;
     }
 

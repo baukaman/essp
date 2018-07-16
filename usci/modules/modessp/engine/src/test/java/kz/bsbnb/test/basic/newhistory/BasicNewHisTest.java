@@ -40,7 +40,8 @@ public class BasicNewHisTest extends EngineTestBase {
         databaseActivity.reset();
         DataEntity newEntity = bootstrapEngine.process(savingEntity);
 
-        //Assert.assertEquals(5000.0, appliedEntity.getEl("amount"));
+        Assert.assertEquals(6000.0, newEntity.getEl("amount"));
+        Assert.assertEquals(DataUtils.getDate("01.02.2018"), newEntity.getReportDate());
         Assert.assertEquals(1, databaseActivity.numberOfInserts());
     }
 
@@ -60,7 +61,52 @@ public class BasicNewHisTest extends EngineTestBase {
         DataEntity newEntity = bootstrapEngine.process(savingEntity);
 
         Assert.assertEquals(0, databaseActivity.numberOfInserts());
+    }
 
+    @Test
+    @Transactional
+    public void shouldUpdateHistory() throws Exception {
+        DataEntity savingEntity = reader.withSource(getInputStream("basic/newhistory/AmountedSCredit.xml"))
+                .withMeta(metaCredit)
+                .read();
 
+        DataEntity appliedEntity = bootstrapEngine.process(savingEntity);
+        dataEntityDao.setMetaSource(new StaticMetaClassDaoImpl(metaCredit));
+
+        savingEntity.setDataValue("amount", new DataDoubleValue(6000.0));
+
+        databaseActivity.reset();
+        DataEntity newEntity = bootstrapEngine.process(savingEntity);
+
+        Assert.assertEquals(6000.0, newEntity.getEl("amount"));
+        Assert.assertEquals(0, databaseActivity.numberOfInserts());
+        Assert.assertEquals(1, databaseActivity.numberOfUpdates());
+
+        DataEntity loadedEntity = dataEntityDao.load(newEntity.getId(), savingEntity.getCreditorId(), newEntity.getReportDate());
+        Assert.assertEquals(6000.0, loadedEntity.getEl("amount"));
+        Assert.assertEquals(newEntity.getEl("primary_contract.no"), loadedEntity.getEl("primary_contract.no"));
+        Assert.assertEquals(newEntity.getEl("primary_contract.date"), loadedEntity.getEl("primary_contract.date"));
+    }
+
+    @Test
+    @Transactional
+    public void shouldNotUpdateHistory() throws Exception {
+        DataEntity savingEntity = reader.withSource(getInputStream("basic/newhistory/AmountedSCredit.xml"))
+                .withMeta(metaCredit)
+                .read();
+
+        DataEntity appliedEntity = bootstrapEngine.process(savingEntity);
+        dataEntityDao.setMetaSource(new StaticMetaClassDaoImpl(metaCredit));
+
+        databaseActivity.reset();
+        DataEntity newEntity = bootstrapEngine.process(savingEntity);
+
+        Assert.assertEquals(0, databaseActivity.numberOfInserts());
+        Assert.assertEquals(0, databaseActivity.numberOfUpdates());
+
+        DataEntity loadedEntity = dataEntityDao.load(newEntity.getId(), savingEntity.getCreditorId(), newEntity.getReportDate());
+        Assert.assertEquals(5000.0, loadedEntity.getEl("amount"));
+        Assert.assertEquals(newEntity.getEl("primary_contract.no"), loadedEntity.getEl("primary_contract.no"));
+        Assert.assertEquals(newEntity.getEl("primary_contract.date"), loadedEntity.getEl("primary_contract.date"));
     }
 }

@@ -1,5 +1,6 @@
 package kz.bsbnb;
 
+import kz.bsbnb.attribute.EntityAttribute;
 import kz.bsbnb.usci.eav.model.meta.IMetaAttribute;
 import kz.bsbnb.usci.eav.model.meta.IMetaType;
 import kz.bsbnb.usci.eav.model.meta.impl.MetaClass;
@@ -25,6 +26,38 @@ public final class DataEntity {
             throw new RuntimeException("no such attribute: " + attribute);
 
         values.put(attribute, dataValue);
+    }
+
+    public Iterator<EntityAttribute> getEntityIterator() {
+        return new Iter();
+    }
+
+    private class Iter implements Iterator<EntityAttribute> {
+        protected Iterator<String> iterator;
+
+        private Iter(){
+            iterator = values.keySet().iterator();
+        }
+
+        @Override
+        public boolean hasNext() {
+            return iterator.hasNext();
+        }
+
+        @Override
+        public EntityAttribute next() {
+            String attribute = iterator.next();
+            IMetaAttribute metaAttribute = metaClass.getMetaAttribute(attribute);
+            DataValue dataValue = getBaseValue(attribute);
+            IMetaType metaType = metaAttribute.getMetaType();
+            return new EntityAttribute.Builder(attribute, metaType, dataValue).build();
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+
+        }
     }
 
     public Object getEl(String path) {

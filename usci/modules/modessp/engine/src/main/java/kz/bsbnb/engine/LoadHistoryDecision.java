@@ -16,6 +16,9 @@ public class LoadHistoryDecision extends Decision {
     FirstClassProcessorDecision firstClassProcessorDecision;
 
     @Autowired
+    SecondClassProcessorDecision secondClassProcessorDecision;
+
+    @Autowired
     DataEntityDao dao;
 
     @Override
@@ -31,9 +34,13 @@ public class LoadHistoryDecision extends Decision {
                         .withLoaded(loadedEntity)
                         .withSaving(savingEntity)
                         .make();
-            } else {
+            } else if(loadedEntity.getReportDate().compareTo(savingEntity.getReportDate()) == 0){
+                applied = secondClassProcessorDecision
+                        .withLoaded(loadedEntity)
+                        .withSaving(savingEntity)
+                        .make();
+            } else
                 throw new UnsupportedOperationException();
-            }
         } else {
             throw new UnsupportedOperationException();
         }
