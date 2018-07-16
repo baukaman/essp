@@ -3,6 +3,7 @@ package kz.bsbnb;
 import kz.bsbnb.base.DataContainer;
 import kz.bsbnb.usci.eav.model.meta.impl.MetaAttribute;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 public class DataValue<T> {
@@ -34,5 +35,12 @@ public class DataValue<T> {
 
     public T getValue() {
         return value;
+    }
+
+    public boolean isOneRow(@Nullable DataValue baseValue) {
+        if(baseValue == null)
+            return false;
+
+        return value.equals(baseValue.getValue());
     }
 }

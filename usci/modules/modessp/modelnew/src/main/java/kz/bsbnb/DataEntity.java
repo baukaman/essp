@@ -122,141 +122,17 @@ public final class DataEntity {
     }
 
     public boolean isOneRow(DataEntity savingEntity) {
-        boolean equal = true;
+        return rowCheck(savingEntity) && savingEntity.rowCheck(this);
+    }
 
-        Iterator<Object> i1 = simpleIterator();
-        Iterator<Object> i2 = savingEntity.simpleIterator();
-
-        while(i1.hasNext() || i2.hasNext()) {
-            try {
-                equal &= i1.next().equals(i2.next());
-            } catch (NoSuchElementException e) {
-                return false;
-            }
-            if(!equal)
+    boolean rowCheck(DataEntity savingEntity) {
+        for (String attribute : values.keySet()) {
+            DataValue baseValue = getBaseValue(attribute);
+            if(!baseValue.isOneRow(savingEntity.getBaseValue(attribute)))
                 return false;
         }
-
-        Iterator<DataEntity> c1 = complexIterator();
-        Iterator<DataEntity> c2 = savingEntity.complexIterator();
-
-        while(c1.hasNext() || c2.hasNext()) {
-            try {
-                equal &= c1.next().getId() == c2.next().getId();
-            } catch (NoSuchElementException e) {
-                return false;
-            }
-            if(!equal)
-                return false;
-        }
-
 
         return true;
     }
-
-    public Iterator<DataEntity> complexIterator(){
-        return new ComplexItr();
-    }
-
-    public Iterator<Object> simpleIterator(){
-        return new SimpleItr();
-    }
-
-    private class ComplexItr implements Iterator<DataEntity> {
-        private Iterator<String> iterator;
-        private DataEntity last;
-
-        private ComplexItr() {
-            Set<String> attributeNames = metaClass.getAttributeNames();
-            iterator = attributeNames.iterator();
-        }
-
-        @Override
-        public boolean hasNext() {
-            try {
-                last = next();
-                return true;
-            } catch (NoSuchElementException e) {
-                return false;
-            }
-        }
-
-        @Override
-        public DataEntity next() {
-            if(last != null) {
-                try {
-                    return last;
-                } finally {
-                    last = null;
-                }
-            } else {
-                while(iterator.hasNext()) {
-                    String attribute = iterator.next();
-                    IMetaAttribute metaAttribute = metaClass.getMetaAttribute(attribute);
-                    IMetaType metaType = metaAttribute.getMetaType();
-                    if(metaType.isComplex() && !metaType.isSet()) {
-                        if (values.get(attribute) != null) {
-                            return ((DataEntity) values.get(attribute).getValue());
-                        }
-                    }
-                }
-                throw new NoSuchElementException();
-            }
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
-
-    private class SimpleItr implements Iterator<Object> {
-        private Iterator<String> iterator;
-        private Object last;
-
-        private SimpleItr() {
-            Set<String> attributeNames = metaClass.getAttributeNames();
-            iterator = attributeNames.iterator();
-        }
-
-        @Override
-        public boolean hasNext() {
-            try {
-                last = next();
-                return true;
-            } catch (NoSuchElementException e) {
-                return false;
-            }
-        }
-
-        @Override
-        public Object next() {
-            if(last != null) {
-                try {
-                    return last;
-                } finally {
-                    last = null;
-                }
-            } else {
-                while(iterator.hasNext()) {
-                    String attribute = iterator.next();
-                    IMetaAttribute metaAttribute = metaClass.getMetaAttribute(attribute);
-                    IMetaType metaType = metaAttribute.getMetaType();
-                    if(!metaType.isComplex() && !metaType.isSet()) {
-                        if (values.get(attribute) != null) {
-                            return values.get(attribute).getValue();
-                        }
-                    }
-                }
-                throw new NoSuchElementException();
-            }
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
-
 
 }
