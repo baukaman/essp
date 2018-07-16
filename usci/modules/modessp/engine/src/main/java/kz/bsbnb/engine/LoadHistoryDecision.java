@@ -19,6 +19,9 @@ public class LoadHistoryDecision extends Decision {
     SecondClassProcessorDecision secondClassProcessorDecision;
 
     @Autowired
+    ThirdClassProcessorDecision thirdClassProcessorDecision;
+
+    @Autowired
     DataEntityDao dao;
 
     @Override
@@ -42,7 +45,15 @@ public class LoadHistoryDecision extends Decision {
             } else
                 throw new UnsupportedOperationException();
         } else {
-            throw new UnsupportedOperationException();
+            loadedEntityOptional = dao.loadByMinReportDate(savingEntity);
+            if(loadedEntityOptional.isPresent()) {
+                applied = thirdClassProcessorDecision
+                        .withLoaded(loadedEntityOptional.get())
+                        .withSaving(savingEntity)
+                        .make();
+            } else {
+                throw new IllegalStateException();
+            }
         }
 
         return applied;

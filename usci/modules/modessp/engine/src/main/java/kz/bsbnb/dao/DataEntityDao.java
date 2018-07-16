@@ -6,6 +6,7 @@ import kz.bsbnb.*;
 import kz.bsbnb.attribute.EntityAttribute;
 import kz.bsbnb.dao.base.BaseDao;
 import kz.bsbnb.SavingInfo;
+import kz.bsbnb.dao.base.RDLoadType;
 import kz.bsbnb.usci.eav.model.meta.IMetaAttribute;
 import kz.bsbnb.usci.eav.model.meta.IMetaType;
 import kz.bsbnb.usci.eav.model.meta.impl.MetaClass;
@@ -165,14 +166,14 @@ public class DataEntityDao extends BaseDao {
         return entity;
     }
 
-    public Optional<DataEntity> loadByMaxReportDate(DataEntity entity) {
+    private Optional<DataEntity> loadByRd(DataEntity entity, RDLoadType loadType) {
         StringBuilder buf = new StringBuilder(100);
         MetaClass metaClass = entity.getMeta();
-        buf.append("SELECT MAX(REPORT_DATE) FROM ");
+        buf.append("SELECT "+loadType.agr+"(REPORT_DATE) FROM ");
         buf.append(metaClass.getClassName());
         buf.append(" WHERE ENTITY_ID = ?");
         buf.append(" AND CREDITOR_ID = ?");
-        buf.append(" AND REPORT_DATE <= ?");
+        buf.append(" AND REPORT_DATE "+ loadType.sign + " ?");
 
 
         Date date = jdbcTemplate.queryForObject(buf.toString(), Date.class, entity.getId(), entity.getCreditorId(), entity.getReportDate());
@@ -213,5 +214,21 @@ public class DataEntityDao extends BaseDao {
         System.out.println(buf.toString());
         databaseActivity.update();
         assert update == 1;
+    }
+
+    public Optional<DataEntity> loadByMaxReportDate(DataEntity entity) {
+        return loadByRd(entity, RDLoadType.BYMAX);
+    }
+
+    public Optional<DataEntity> loadByMinReportDate(DataEntity entity) {
+        return loadByRd(entity, RDLoadType.BYMIN);
+    }
+
+    public void updateReportDate(DataEntity entity, Date reportDate) {
+        StringBuilder buf = new StringBuilder(50);
+        buf.append("update ").append(entity.getMeta().getClassName());
+        buf.append(" set report_date = ? where entity_id = ? and creditor_id = ? and report_date = ?");
+        jdbcTemplate.update(buf.toString(), reportDate, entity.getId(), savingInfo.getCreditorId(), entity.getReportDate());
+        databaseActivity.update();
     }
 }
