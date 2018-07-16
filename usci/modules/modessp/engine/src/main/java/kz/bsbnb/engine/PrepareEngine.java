@@ -32,13 +32,18 @@ public class PrepareEngine {
 
         boolean childKeysFound = true;
         //prepare children first
-        for (String attribute : entity.getAttributes()) {
+        for (String attribute : metaClass.getAttributeNames()) {
             IMetaAttribute metaAttribute = metaClass.getMetaAttribute(attribute);
             IMetaType metaType = metaAttribute.getMetaType();
             DataValue baseValue = entity.getBaseValue(attribute);
 
             if (!metaAttribute.isKey())
                 continue;
+
+            if(baseValue == null) {
+                childKeysFound = false;
+                continue;
+            }
 
             if(metaType.isComplex()) {
                 DataEntity childEntity = process((DataEntity) baseValue.getValue());

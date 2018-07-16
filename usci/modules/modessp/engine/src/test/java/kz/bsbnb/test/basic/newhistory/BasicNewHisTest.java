@@ -46,7 +46,7 @@ public class BasicNewHisTest extends EngineTestBase {
 
     @Test
     @Transactional
-    public void shouldNotCreateHisotry() throws Exception {
+    public void shouldNotCreateHistory() throws Exception {
         DataEntity savingEntity = reader.withSource(getInputStream("basic/newhistory/AmountedSCredit.xml"))
                 .withMeta(metaCredit)
                 .read();

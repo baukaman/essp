@@ -3725,7 +3725,7 @@ public class BaseUnitTest {
 
         creditor = new MetaAttribute(false, false, metaRefCreditor);
         creditor.setImmutable(true);
-        creditor.setKey(true);
+        creditor.setKey(false);
         creditor.setNullable(false);
         metaCredit.setMetaAttribute("creditor", creditor);
         creditor.setId(58);
