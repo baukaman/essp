@@ -152,6 +152,68 @@ public class BasicNewHisTest extends EngineTestBase {
         Assert.assertEquals(1, databaseActivity.numberOfUpdates());
     }
 
+    @Test
+    @Transactional
+    public void shouldCheckSubsetOf1Class() throws Exception {
+        DataEntity entity = reader.withSource(getInputStream("basic/newhistory/AmountedSCredit.xml"))
+                .withMeta(metaCredit)
+                .read();
+
+        dataEntityDao.setMetaSource(new StaticMetaClassDaoImpl(metaCredit));
+        DataEntity savedEntity = entity.clone();
+        savedEntity.setDataValue("interest_rate_yearly", new DataDoubleValue(12.0));
+
+        DataEntity appliedEntity = bootstrapEngine.process(savedEntity);
+        databaseActivity.reset();
+
+        entity.setReportDate(DataUtils.getDate("01.02.2018"));
+        bootstrapEngine.process(entity);
+
+        Assert.assertEquals(0, databaseActivity.numberOfInserts());
+        Assert.assertEquals(0, databaseActivity.numberOfUpdates());
+    }
+
+    @Test
+    @Transactional
+    public void shouldCheckSubsetOf2Class() throws Exception {
+        DataEntity entity = reader.withSource(getInputStream("basic/newhistory/AmountedSCredit.xml"))
+                .withMeta(metaCredit)
+                .read();
+
+        dataEntityDao.setMetaSource(new StaticMetaClassDaoImpl(metaCredit));
+        DataEntity savedEntity = entity.clone();
+        savedEntity.setDataValue("interest_rate_yearly", new DataDoubleValue(12.0));
+
+        DataEntity appliedEntity = bootstrapEngine.process(savedEntity);
+        databaseActivity.reset();
+
+        bootstrapEngine.process(entity);
+
+        Assert.assertEquals(0, databaseActivity.numberOfInserts());
+        Assert.assertEquals(0, databaseActivity.numberOfUpdates());
+    }
+
+    @Test
+    @Transactional
+    public void shouldCheckSubsetOf3Class() throws Exception {
+        DataEntity entity = reader.withSource(getInputStream("basic/newhistory/AmountedSCredit.xml"))
+                .withMeta(metaCredit)
+                .read();
+
+        dataEntityDao.setMetaSource(new StaticMetaClassDaoImpl(metaCredit));
+        DataEntity savedEntity = entity.clone();
+        savedEntity.setDataValue("interest_rate_yearly", new DataDoubleValue(12.0));
+
+        DataEntity appliedEntity = bootstrapEngine.process(savedEntity);
+        databaseActivity.reset();
+
+        entity.setReportDate(DataUtils.getDate("01.12.2017"));
+        bootstrapEngine.process(entity);
+
+        Assert.assertEquals(0, databaseActivity.numberOfInserts());
+        Assert.assertEquals(1, databaseActivity.numberOfUpdates());
+    }
+
 
 
 

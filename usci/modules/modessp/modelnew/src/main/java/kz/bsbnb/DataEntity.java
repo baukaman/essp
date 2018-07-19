@@ -154,14 +154,10 @@ public final class DataEntity {
         return ret;
     }
 
-    public boolean isOneRow(DataEntity savingEntity) {
-        return rowCheck(savingEntity) && savingEntity.rowCheck(this);
-    }
-
-    boolean rowCheck(DataEntity savingEntity) {
+    public boolean subsetOf(DataEntity loadedEntity) {
         for (String attribute : values.keySet()) {
             DataValue baseValue = getBaseValue(attribute);
-            if(!baseValue.isOneRow(savingEntity.getBaseValue(attribute)))
+            if(!baseValue.isOneRow(loadedEntity.getBaseValue(attribute)))
                 return false;
         }
 

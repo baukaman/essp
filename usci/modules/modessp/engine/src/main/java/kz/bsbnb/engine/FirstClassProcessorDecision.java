@@ -12,7 +12,7 @@ public class FirstClassProcessorDecision extends Decision {
 
     @Override
     public DataEntity make() {
-        if(loadedEntity.isOneRow(savingEntity))
+        if(savingEntity.subsetOf(loadedEntity))
             return loadedEntity;
         else {
             dataEntityDao.insert(savingEntity);

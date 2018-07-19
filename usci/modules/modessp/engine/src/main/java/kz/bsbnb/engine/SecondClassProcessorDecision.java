@@ -8,7 +8,7 @@ public class SecondClassProcessorDecision extends Decision {
 
     @Override
     public DataEntity make() {
-        if(!loadedEntity.isOneRow(savingEntity)) {
+        if(!savingEntity.subsetOf(loadedEntity)) {
             dataEntityDao.update(savingEntity);
             return savingEntity;
         } else {

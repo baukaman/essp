@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 public class ThirdClassProcessorDecision extends Decision {
     @Override
     public DataEntity make() {
-        if(!loadedEntity.isOneRow(savingEntity)) {
+        if(!savingEntity.subsetOf(loadedEntity)) {
             dataEntityDao.insert(savingEntity);
             return savingEntity;
         } else {
