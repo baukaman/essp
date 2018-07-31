@@ -32,6 +32,16 @@ public final class DataEntity {
         return new Iter();
     }
 
+    public boolean equalsByKey(DataEntity entity) {
+        String[] keyFields = new String[]{"code", "short_name"};
+        for (String keyField : keyFields) {
+            if(getEl(keyField) != null && entity.getEl(keyField) != null)
+                return Objects.equals(getEl(keyField), entity.getEl(keyField));
+        }
+
+        return false;
+    }
+
     private class Iter implements Iterator<EntityAttribute> {
         protected Iterator<String> iterator;
 

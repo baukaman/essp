@@ -1,6 +1,9 @@
 package kz.bsbnb.test;
 
+import kz.bsbnb.dao.DataEntityDao;
+import kz.bsbnb.engine.BootstrapEngine;
 import kz.bsbnb.engine.DatabaseActivity;
+import kz.bsbnb.reader.test.ThreePartReader;
 import kz.bsbnb.testing.FunctionalTest;
 import org.junit.Before;
 import org.junit.runner.RunWith;
@@ -18,4 +21,13 @@ public class EngineTestBase extends FunctionalTest {
     public void setUp() throws Exception {
         databaseActivity.reset();
     }
+
+    @Autowired
+    protected DataEntityDao dataEntityDao;
+
+    @Autowired
+    protected BootstrapEngine bootstrapEngine;
+
+    @Autowired
+    protected ThreePartReader reader;
 }

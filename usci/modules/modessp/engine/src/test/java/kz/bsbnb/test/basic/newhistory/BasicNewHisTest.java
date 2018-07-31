@@ -15,15 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 public class BasicNewHisTest extends EngineTestBase {
 
-    @Autowired
-    DataEntityDao dataEntityDao;
-
-    @Autowired
-    BootstrapEngine bootstrapEngine;
-
-    @Autowired
-    ThreePartReader reader;
-
     @Test
     @Transactional
     public void shouldCreateHistory() throws Exception {

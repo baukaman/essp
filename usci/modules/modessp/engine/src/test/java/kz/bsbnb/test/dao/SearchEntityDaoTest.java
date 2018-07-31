@@ -2,7 +2,7 @@ package kz.bsbnb.test.dao;
 
 import kz.bsbnb.DataEntity;
 import kz.bsbnb.dao.DataEntityDao;
-import kz.bsbnb.dao.SearchEntityDao;
+import kz.bsbnb.dao.ISearchEntityDao;
 import kz.bsbnb.dao.impl.StaticMetaClassDaoImpl;
 import kz.bsbnb.engine.DatabaseActivity;
 import kz.bsbnb.reader.test.ThreePartReader;
@@ -17,7 +17,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"/applicationContextProp.xml","/applicationContextEngine.xml"})
+@ContextConfiguration(locations = {"/applicationContextProp.xml","/applicationContextEngine.xml","/applicationContextEngineTest.xml"})
 public class SearchEntityDaoTest extends FunctionalTest {
 
     @Autowired
@@ -27,7 +27,7 @@ public class SearchEntityDaoTest extends FunctionalTest {
     DataEntityDao entityDao;
 
     @Autowired
-    SearchEntityDao searchEntityDao;
+    ISearchEntityDao searchEntityDao;
 
     @Autowired
     DatabaseActivity databaseActivity;

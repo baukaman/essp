@@ -4,7 +4,7 @@ import kz.bsbnb.DataComplexValue;
 import kz.bsbnb.DataEntity;
 import kz.bsbnb.DataValue;
 import kz.bsbnb.SavingInfo;
-import kz.bsbnb.dao.SearchEntityDao;
+import kz.bsbnb.dao.ISearchEntityDao;
 import kz.bsbnb.usci.eav.model.meta.IMetaAttribute;
 import kz.bsbnb.usci.eav.model.meta.IMetaType;
 import kz.bsbnb.usci.eav.model.meta.impl.MetaClass;
@@ -24,7 +24,7 @@ public class PrepareEngine {
     NewEntityProcessDecision newEntityProcessDecision;
 
     @Autowired
-    SearchEntityDao searchEntityDao;
+    ISearchEntityDao searchEntityDao;
 
     public DataEntity process(DataEntity entity) {
         MetaClass metaClass = entity.getMeta();

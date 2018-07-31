@@ -20,9 +20,13 @@ public class BootstrapEngine {
     @Autowired
     NewEntityProcessDecision newEntityProcessDecision;
 
+    @Autowired
+    RefEngine refEngine;
+
     @InfoBootstrap
     public DataEntity process(DataEntity entity){
         DataEntity prepared = prepareEngine.process(entity);
+        refEngine.process(prepared);
 
         if(prepared.getId() > 0) {
             return loadHistoryDecision

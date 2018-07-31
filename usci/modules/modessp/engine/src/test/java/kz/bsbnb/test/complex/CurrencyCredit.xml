@@ -1,0 +1,26 @@
+<batch>
+    <info>
+        <report_date>01.01.2018</report_date>
+        <creditor>
+            <code>TTTTKA</code>
+        </creditor>
+    </info>
+    <entities>
+        <credit>
+            <amount>5000.0</amount>
+            <maturity_date>01.01.2018</maturity_date>
+            <primary_contract>
+                <no>KZT-001</no>
+                <date>12.01.2018</date>
+            </primary_contract>
+            <currency>
+                <short_name>KZT</short_name>
+            </currency>
+        </credit>
+    </entities>
+    <refs>
+        <currency id="101">
+            <short_name>KZT</short_name>
+        </currency>
+    </refs>
+</batch>

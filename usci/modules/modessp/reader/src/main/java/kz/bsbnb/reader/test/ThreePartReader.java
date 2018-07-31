@@ -10,11 +10,13 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 import java.io.InputStream;
+import java.util.List;
 
 @Component
 public class ThreePartReader {
     XMLEventReader xmlEventReader;
     private MetaClass meta;
+    protected List<DataEntity> refs;
 
     public DataEntity read() throws XMLStreamException {
         DataEntity entity = null;
@@ -39,10 +41,13 @@ public class ThreePartReader {
                     entity.setCreditorId(infoReader.getCreditorId());
                     entity.setReportDate(infoReader.getReportDate());
                 } else if(localName.equals("refs")) {
-                    new RefsReader(xmlEventReader)
-                            .withMeta(meta)
+                    RefsReader refsReader = new RefsReader(xmlEventReader);
+
+                    refsReader.withMeta(meta)
                             .withExitTag(localName)
                             .read();
+
+                    refs = refsReader.getRefs();
                 }
             }
         }
@@ -62,4 +67,7 @@ public class ThreePartReader {
         return this;
     }
 
+    public List<DataEntity> getRefs() {
+        return refs;
+    }
 }

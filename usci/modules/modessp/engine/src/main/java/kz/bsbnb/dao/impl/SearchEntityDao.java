@@ -1,6 +1,8 @@
-package kz.bsbnb.dao;
+package kz.bsbnb.dao.impl;
 
 import kz.bsbnb.DataEntity;
+import kz.bsbnb.DataValue;
+import kz.bsbnb.dao.ISearchEntityDao;
 import kz.bsbnb.dao.base.BaseDao;
 import kz.bsbnb.usci.eav.model.meta.IMetaAttribute;
 import kz.bsbnb.usci.eav.model.meta.IMetaType;
@@ -11,7 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class SearchEntityDao extends BaseDao {
+public class SearchEntityDao extends BaseDao implements ISearchEntityDao {
+
+    @Override
     public long search(DataEntity entity) {
         MetaClass meta = entity.getMeta();
         StringBuilder buf = new StringBuilder(100);
@@ -20,9 +24,13 @@ public class SearchEntityDao extends BaseDao {
         buf.append(" WHERE");
 
         List<Object> keys = new ArrayList<>();
-        for (String attribute : entity.getAttributes()) {
+        for (String attribute : meta.getAttributeNames()) {
             IMetaAttribute metaAttribute = meta.getMetaAttribute(attribute);
             IMetaType metaType = metaAttribute.getMetaType();
+            DataValue baseValue = entity.getBaseValue(attribute);
+
+            if(baseValue == null)
+                continue;
 
             if(!metaAttribute.isKey())
                 continue;
@@ -32,10 +40,10 @@ public class SearchEntityDao extends BaseDao {
 
             if(metaType.isComplex()) {
                 buf.append(" ").append(attribute + "_ID = ?");
-                keys.add(((DataEntity) entity.getBaseValue(attribute).getValue()).getId());
+                keys.add(((DataEntity) baseValue.getValue()).getId());
             } else {
                 buf.append(" ").append(safeColumnName(attribute) + " = ?");
-                keys.add(entity.getBaseValue(attribute).getValue());
+                keys.add(baseValue.getValue());
             }
         }
 

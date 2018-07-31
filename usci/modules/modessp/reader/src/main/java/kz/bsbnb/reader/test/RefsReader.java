@@ -9,8 +9,12 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
+import java.util.LinkedList;
+import java.util.List;
 
 public class RefsReader extends BaseReader {
+
+    List<DataEntity> refs = new LinkedList<>();
 
     public RefsReader(XMLEventReader xmlEventReader) {
         super(xmlEventReader);
@@ -33,6 +37,8 @@ public class RefsReader extends BaseReader {
                     readRef("creditor", localPart, id);
                 } else if(localPart.equals("pledge_type")) {
                     readRef("pledges.pledge_type",localPart, id);
+                } else if(localPart.equals("currency")) {
+                    readRef("currency", localPart, id);
                 }
 
             } else if(xmlEvent.isEndElement()) {
@@ -50,10 +56,15 @@ public class RefsReader extends BaseReader {
                 .withExitTagName(localPart)
                 .read();
         entity.setId(id);
+        refs.add(entity);
     }
 
     public RefsReader withMeta(MetaClass meta) {
         metaClass = meta;
         return this;
+    }
+
+    public List<DataEntity> getRefs() {
+        return refs;
     }
 }
