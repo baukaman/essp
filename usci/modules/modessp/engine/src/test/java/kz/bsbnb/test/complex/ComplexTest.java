@@ -161,5 +161,63 @@ public class ComplexTest extends EngineTestBase {
         Assert.assertEquals("EUR", lastApplied.getEl("currency.short_name"));
     }
 
+    @Test
+    @Transactional
+    public void shouldNotUpdateHistoryWhenNoInfo() throws Exception {
+        DataEntity savingEntity = reader.withSource(getInputStream("complex/CurrencyCredit.xml"))
+                .withMeta(metaCredit)
+                .read();
+
+        dataEntityDao.setMetaSource(new StaticMetaClassDaoImpl(metaCredit));
+
+        DataEntity appliedEntity = bootstrapEngine.process(savingEntity);
+
+
+        savingEntity = reader.withSource(getInputStream("complex/NoCurrencyCredit.xml"))
+                .withMeta(metaCredit)
+                .read();
+
+        databaseActivity.reset();
+        DataEntity applied = bootstrapEngine.process(savingEntity);
+        Assert.assertEquals(0, databaseActivity.numberOfInserts());
+        Assert.assertEquals(0, databaseActivity.numberOfUpdates());
+        Assert.assertEquals("KZT", applied.getEl("currency.short_name"));
+
+
+        databaseActivity.reset();
+        savingEntity.setReportDate(DataUtils.getDate("01.02.2018"));
+        applied = bootstrapEngine.process(savingEntity);
+        Assert.assertEquals(0, databaseActivity.numberOfInserts());
+        Assert.assertEquals(0, databaseActivity.numberOfUpdates());
+        Assert.assertEquals("KZT", applied.getEl("currency.short_name"));
+        Assert.assertEquals(DataUtils.getDate("01.01.2018"), applied.getReportDate());
+    }
+
+    @Test
+    @Transactional
+    public void shouldUpdateRdLessNoInfo() throws Exception {
+        DataEntity savingEntity = reader.withSource(getInputStream("complex/CurrencyCredit.xml"))
+                .withMeta(metaCredit)
+                .read();
+
+        dataEntityDao.setMetaSource(new StaticMetaClassDaoImpl(metaCredit));
+
+        DataEntity appliedEntity = bootstrapEngine.process(savingEntity);
+
+
+        savingEntity = reader.withSource(getInputStream("complex/NoCurrencyCredit.xml"))
+                .withMeta(metaCredit)
+                .read();
+
+        savingEntity.setReportDate(DataUtils.getDate("01.12.2017"));
+
+        databaseActivity.reset();
+        DataEntity applied = bootstrapEngine.process(savingEntity);
+        Assert.assertEquals(0, databaseActivity.numberOfInserts());
+        Assert.assertEquals(1, databaseActivity.numberOfUpdates());
+        Assert.assertEquals("KZT", applied.getEl("currency.short_name"));
+        Assert.assertEquals(DataUtils.getDate("01.12.2017"), applied.getReportDate());
+    }
+
 
 }
