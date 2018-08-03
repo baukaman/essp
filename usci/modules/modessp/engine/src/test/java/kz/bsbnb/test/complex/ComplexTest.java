@@ -75,6 +75,8 @@ public class ComplexTest extends EngineTestBase {
         databaseActivity.reset();
         bootstrapEngine.process(savingEntity);
         Assert.assertEquals(1, databaseActivity.numberOfInserts());
+        DataEntity loadedEntity = dataEntityDao.load(appliedEntity.getId(), appliedEntity.getCreditorId(), appliedEntity.getReportDate());
+        Assert.assertEquals(appliedEntity.getCreditorId(), ((DataEntity) loadedEntity.getEl("primary_contract")).getCreditorId());
     }
 
     @Test

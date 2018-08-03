@@ -93,7 +93,7 @@ public class DataEntityDao extends BaseDao {
         simpleJdbcInsert.withTableName("EAV_BE_ENTITIES")
                 .usingGeneratedKeyColumns("ENTITY_ID");
         Map<String,Object> parameters = new HashMap<>();
-        parameters.put("creditor_id", entity.getCreditorId());
+        parameters.put("creditor_id", savingInfo.getCreditorId());
         //parameters.put("entity_id", 1L);
         parameters.put("class_id", meta.getId());
         parameters.put("entity_key"," ");
@@ -107,11 +107,12 @@ public class DataEntityDao extends BaseDao {
 
 
     public DataEntity load(long id, long creditorId, Date reportDate) throws RefLoadException {
-        List<Map<String, Object>> maps = jdbcTemplate.queryForList("SELECT * FROM EAV_BE_ENTITIES where ENTITY_ID = :ENTITY_ID", id);
+        List<Map<String, Object>> maps = jdbcTemplate.queryForList("SELECT * FROM EAV_BE_ENTITIES where ENTITY_ID = ?" +
+                " AND CREDITOR_ID = ?", id, creditorId);
         databaseActivity.select();
 
         if(maps.size() < 1)
-            throw new RuntimeException("No such entity with id:" + id);
+            throw new RuntimeException("No such entity with id:" + id + ", creditorId:" + creditorId);
 
         if(maps.size() != 1)
             throw new RuntimeException("Incorrect fetch size: " + id);
