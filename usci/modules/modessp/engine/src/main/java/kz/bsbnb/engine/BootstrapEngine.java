@@ -2,6 +2,8 @@ package kz.bsbnb.engine;
 
 import kz.bsbnb.DataEntity;
 import kz.bsbnb.annotations.InfoBootstrap;
+import kz.bsbnb.exception.RefLoadException;
+import kz.bsbnb.exception.RefNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,12 +23,12 @@ public class BootstrapEngine {
     NewEntityProcessDecision newEntityProcessDecision;
 
     @Autowired
-    RefEngine refEngine;
+    IRefEngine IRefEngine;
 
     @InfoBootstrap
-    public DataEntity process(DataEntity entity){
+    public DataEntity process(DataEntity entity) throws RefNotFoundException, RefLoadException {
         DataEntity prepared = prepareEngine.process(entity);
-        refEngine.process(prepared);
+        IRefEngine.process(prepared);
 
         if(prepared.getId() > 0) {
             return loadHistoryDecision

@@ -7,6 +7,8 @@ import kz.bsbnb.attribute.EntityAttribute;
 import kz.bsbnb.dao.base.BaseDao;
 import kz.bsbnb.SavingInfo;
 import kz.bsbnb.dao.base.RDLoadType;
+import kz.bsbnb.engine.IRefEngine;
+import kz.bsbnb.exception.RefLoadException;
 import kz.bsbnb.usci.eav.model.meta.IMetaAttribute;
 import kz.bsbnb.usci.eav.model.meta.IMetaType;
 import kz.bsbnb.usci.eav.model.meta.impl.MetaClass;
@@ -27,6 +29,9 @@ public class DataEntityDao extends BaseDao {
 
     @Autowired
     SavingInfo savingInfo;
+
+    @Autowired
+    IRefEngine refEngine;
 
     /**
      * 1) sequence generation technique ???
@@ -101,7 +106,7 @@ public class DataEntityDao extends BaseDao {
     }
 
 
-    public DataEntity load(long id, long creditorId, Date reportDate) {
+    public DataEntity load(long id, long creditorId, Date reportDate) throws RefLoadException {
         List<Map<String, Object>> maps = jdbcTemplate.queryForList("SELECT * FROM EAV_BE_ENTITIES where ENTITY_ID = :ENTITY_ID", id);
         databaseActivity.select();
 
@@ -132,9 +137,10 @@ public class DataEntityDao extends BaseDao {
 
         Map<String, Object> next = maps.iterator().next();
         for (String attribute : metaClass.getAttributeNames()) {
+            IMetaAttribute metaAttribute = metaClass.getMetaAttribute(attribute);
+            IMetaType metaType = metaAttribute.getMetaType();
+
             if(next.get(safeColumnName(attribute)) != null) {
-                IMetaAttribute metaAttribute = metaClass.getMetaAttribute(attribute);
-                IMetaType metaType = metaAttribute.getMetaType();
                 if(!metaType.isComplex()) {
                     if(!metaType.isSet()) {
                         MetaValue metaSimple = (MetaValue) metaType;
@@ -160,13 +166,17 @@ public class DataEntityDao extends BaseDao {
                 if(attribute.equalsIgnoreCase("creditor"))
                     continue;
                 Long childId = ((BigDecimal) next.get(attribute + "_ID")).longValue();
-                entity.setDataValue(attribute, new DataComplexValue(load(childId, creditorId, reportDate)));
+                if(metaType.isReference()) {
+                    entity.setDataValue(attribute, new DataComplexValue(refEngine.getById(childId, reportDate)));
+                } else {
+                    entity.setDataValue(attribute, new DataComplexValue(load(childId, creditorId, reportDate)));
+                }
             }
         }
         return entity;
     }
 
-    private Optional<DataEntity> loadByRd(DataEntity entity, RDLoadType loadType) {
+    private Optional<DataEntity> loadByRd(DataEntity entity, RDLoadType loadType) throws RefLoadException {
         StringBuilder buf = new StringBuilder(100);
         MetaClass metaClass = entity.getMeta();
         buf.append("SELECT "+loadType.agr+"(REPORT_DATE) FROM ");
@@ -216,11 +226,11 @@ public class DataEntityDao extends BaseDao {
         assert update == 1;
     }
 
-    public Optional<DataEntity> loadByMaxReportDate(DataEntity entity) {
+    public Optional<DataEntity> loadByMaxReportDate(DataEntity entity) throws RefLoadException {
         return loadByRd(entity, RDLoadType.BYMAX);
     }
 
-    public Optional<DataEntity> loadByMinReportDate(DataEntity entity) {
+    public Optional<DataEntity> loadByMinReportDate(DataEntity entity) throws RefLoadException {
         return loadByRd(entity, RDLoadType.BYMIN);
     }
 

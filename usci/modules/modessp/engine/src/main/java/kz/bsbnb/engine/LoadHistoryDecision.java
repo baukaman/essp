@@ -3,6 +3,7 @@ package kz.bsbnb.engine;
 import com.google.common.base.Optional;
 import kz.bsbnb.DataEntity;
 import kz.bsbnb.dao.DataEntityDao;
+import kz.bsbnb.exception.RefLoadException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -25,7 +26,7 @@ public class LoadHistoryDecision extends Decision {
     DataEntityDao dao;
 
     @Override
-    public DataEntity make() {
+    public DataEntity make() throws RefLoadException {
         Optional<DataEntity> loadedEntityOptional = dao.loadByMaxReportDate(savingEntity);
         DataEntity applied;
 

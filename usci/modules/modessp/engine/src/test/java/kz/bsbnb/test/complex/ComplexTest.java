@@ -1,24 +1,22 @@
 package kz.bsbnb.test.complex;
 
+import kz.bsbnb.DataComplexValue;
 import kz.bsbnb.DataEntity;
-import kz.bsbnb.dao.ISearchEntityDao;
-import kz.bsbnb.dao.impl.StaticSearchEntityDao;
-import kz.bsbnb.engine.RefEngine;
+import kz.bsbnb.DataStringValue;
+import kz.bsbnb.SavingInfo;
+import kz.bsbnb.dao.impl.StaticMetaClassDaoImpl;
+import kz.bsbnb.engine.IRefEngine;
 import kz.bsbnb.exception.RefNotFoundException;
 import kz.bsbnb.reader.test.ThreePartReader;
 import kz.bsbnb.test.EngineTestBase;
+import kz.bsbnb.usci.eav.model.meta.impl.MetaClass;
+import kz.bsbnb.usci.eav.util.DataUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class ComplexTest extends EngineTestBase {
 
@@ -26,7 +24,10 @@ public class ComplexTest extends EngineTestBase {
     ThreePartReader reader;
 
     @Autowired
-    RefEngine refEngine;
+    IRefEngine refEngine;
+
+    @Autowired
+    SavingInfo savingInfo;
 
     @Test(expected = RefNotFoundException.class)
     @Transactional
@@ -35,21 +36,21 @@ public class ComplexTest extends EngineTestBase {
                 .withMeta(metaCredit)
                 .read();
 
+        refEngine.reloadCache();
         bootstrapEngine.process(entity);
         fail("should have thrown ref not found error");
     }
 
     @Test
     @Transactional
-    @DirtiesContext
-    public void shouldCreateHistory() throws Exception {
+    public void shouldSaveNewCredit() throws Exception {
         DataEntity entity = reader.withSource(getInputStream("complex/CurrencyCredit.xml"))
                 .withMeta(metaCredit)
                 .read();
 
 
-        List<DataEntity> refs = reader.getRefs();
-        refEngine.setSearchEntityDao(new StaticSearchEntityDao(refs));
+        //List<DataEntity> refs = reader.getRefs();
+        //refEngine.setSearchEntityDao(new StaticSearchEntityDao(refs));
 
         DataEntity appliedEntity = bootstrapEngine.process(entity);
         DataEntity currency = (DataEntity) appliedEntity.getBaseValue("currency").getValue();
@@ -57,5 +58,22 @@ public class ComplexTest extends EngineTestBase {
         Assert.assertTrue(appliedEntity.getId() > 0);
     }
 
+    @Test
+    @Transactional
+    public void shouldCreateNewHistory() throws Exception {
+        DataEntity savingEntity = reader.withSource(getInputStream("complex/CurrencyCredit.xml"))
+                .withMeta(metaCredit)
+                .read();
 
+        dataEntityDao.setMetaSource(new StaticMetaClassDaoImpl(metaCredit));
+
+        DataEntity appliedEntity = bootstrapEngine.process(savingEntity);
+        DataEntity newCurrency = new DataEntity(((MetaClass) metaCredit.getEl("currency")));
+        newCurrency.setDataValue("short_name",new DataStringValue("EUR"));
+        savingEntity.setDataValue("currency", new DataComplexValue(newCurrency));
+        savingEntity.setReportDate(DataUtils.getDate("01.02.2018"));
+        databaseActivity.reset();
+        bootstrapEngine.process(savingEntity);
+        Assert.assertEquals(1, databaseActivity.numberOfInserts());
+    }
 }

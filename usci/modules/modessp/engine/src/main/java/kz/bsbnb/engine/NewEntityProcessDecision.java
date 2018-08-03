@@ -3,6 +3,7 @@ package kz.bsbnb.engine;
 import kz.bsbnb.DataEntity;
 import kz.bsbnb.SavingInfo;
 import kz.bsbnb.dao.DataEntityDao;
+import kz.bsbnb.exception.RefLoadException;
 import kz.bsbnb.usci.eav.model.meta.IMetaAttribute;
 import kz.bsbnb.usci.eav.model.meta.IMetaType;
 import kz.bsbnb.usci.eav.model.meta.impl.MetaClass;
@@ -28,7 +29,7 @@ public class NewEntityProcessDecision extends Decision {
     ApplicationContext context;
 
     @Override
-    public DataEntity make() {
+    public DataEntity make() throws RefLoadException {
         MetaClass metaClass = savingEntity.getMeta();
 
         for (String attribute : savingEntity.getAttributes()) {

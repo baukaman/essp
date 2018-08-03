@@ -5,9 +5,11 @@ import kz.bsbnb.dao.MetaClassDao;
 import kz.bsbnb.usci.eav.model.meta.IMetaAttribute;
 import kz.bsbnb.usci.eav.model.meta.IMetaType;
 import kz.bsbnb.usci.eav.model.meta.impl.MetaClass;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+@Primary
 @Component
 @Profile("dev")
 public class StaticMetaClassDaoImpl implements MetaClassDao {

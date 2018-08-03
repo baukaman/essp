@@ -22,5 +22,8 @@
         <currency id="101">
             <short_name>KZT</short_name>
         </currency>
+        <currency id="102">
+            <short_name>EUR</short_name>
+        </currency>
     </refs>
 </batch>
