@@ -238,6 +238,7 @@ public class DataEntityDao extends BaseDao {
         StringBuilder buf = new StringBuilder(50);
         buf.append("update ").append(entity.getMeta().getClassName());
         buf.append(" set report_date = ? where entity_id = ? and creditor_id = ? and report_date = ?");
+        System.out.println(buf.toString());
         jdbcTemplate.update(buf.toString(), reportDate, entity.getId(), savingInfo.getCreditorId(), entity.getReportDate());
         databaseActivity.update();
     }

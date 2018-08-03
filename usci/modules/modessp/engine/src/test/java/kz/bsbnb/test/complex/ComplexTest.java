@@ -76,4 +76,90 @@ public class ComplexTest extends EngineTestBase {
         bootstrapEngine.process(savingEntity);
         Assert.assertEquals(1, databaseActivity.numberOfInserts());
     }
+
+    @Test
+    @Transactional
+    public void shouldNotCreateNewHistory() throws Exception {
+        DataEntity savingEntity = reader.withSource(getInputStream("complex/CurrencyCredit.xml"))
+                .withMeta(metaCredit)
+                .read();
+
+        dataEntityDao.setMetaSource(new StaticMetaClassDaoImpl(metaCredit));
+
+        DataEntity appliedEntity = bootstrapEngine.process(savingEntity);
+        savingEntity.setReportDate(DataUtils.getDate("01.02.2018"));
+        databaseActivity.reset();
+        bootstrapEngine.process(savingEntity);
+        Assert.assertEquals(0, databaseActivity.numberOfInserts());
+        Assert.assertEquals(0, databaseActivity.numberOfUpdates());
+        Assert.assertEquals(0, savingEntity.getId());
+
+        savingEntity.setReportDate(DataUtils.getDate("01.01.2018"));
+        databaseActivity.reset();
+        bootstrapEngine.process(savingEntity);
+        Assert.assertEquals(0, databaseActivity.numberOfInserts());
+        Assert.assertEquals(0, databaseActivity.numberOfUpdates());
+        Assert.assertEquals(0, savingEntity.getId());
+    }
+
+    @Test
+    @Transactional
+    public void shouldCreateNewHistoryRdLess() throws Exception {
+        DataEntity savingEntity = reader.withSource(getInputStream("complex/CurrencyCredit.xml"))
+                .withMeta(metaCredit)
+                .read();
+
+        dataEntityDao.setMetaSource(new StaticMetaClassDaoImpl(metaCredit));
+
+        DataEntity appliedEntity = bootstrapEngine.process(savingEntity);
+        DataEntity newCurrency = new DataEntity(((MetaClass) metaCredit.getEl("currency")));
+        newCurrency.setDataValue("short_name",new DataStringValue("EUR"));
+        savingEntity.setDataValue("currency", new DataComplexValue(newCurrency));
+        savingEntity.setReportDate(DataUtils.getDate("01.12.2017"));
+        databaseActivity.reset();
+        bootstrapEngine.process(savingEntity);
+        Assert.assertEquals(1, databaseActivity.numberOfInserts());
+        Assert.assertEquals(0, databaseActivity.numberOfUpdates());
+    }
+
+    @Test
+    @Transactional
+    public void shouldUpdateRdLess() throws Exception {
+        DataEntity savingEntity = reader.withSource(getInputStream("complex/CurrencyCredit.xml"))
+                .withMeta(metaCredit)
+                .read();
+
+        dataEntityDao.setMetaSource(new StaticMetaClassDaoImpl(metaCredit));
+
+        DataEntity appliedEntity = bootstrapEngine.process(savingEntity);
+        savingEntity.setReportDate(DataUtils.getDate("01.12.2017"));
+        databaseActivity.reset();
+        DataEntity lastApplied = bootstrapEngine.process(savingEntity);
+        Assert.assertEquals(0, databaseActivity.numberOfInserts());
+        Assert.assertEquals(1, databaseActivity.numberOfUpdates());
+        Assert.assertEquals(DataUtils.getDate("01.12.2017"), lastApplied.getReportDate());
+    }
+
+    @Test
+    @Transactional
+    public void shouldUpdateHistoryRdEqual() throws Exception {
+        DataEntity savingEntity = reader.withSource(getInputStream("complex/CurrencyCredit.xml"))
+                .withMeta(metaCredit)
+                .read();
+
+        dataEntityDao.setMetaSource(new StaticMetaClassDaoImpl(metaCredit));
+
+        DataEntity appliedEntity = bootstrapEngine.process(savingEntity);
+        DataEntity newCurrency = new DataEntity(((MetaClass) metaCredit.getEl("currency")));
+        newCurrency.setDataValue("short_name",new DataStringValue("EUR"));
+        savingEntity.setDataValue("currency", new DataComplexValue(newCurrency));
+
+        databaseActivity.reset();
+        DataEntity lastApplied = bootstrapEngine.process(savingEntity);
+        Assert.assertEquals(0, databaseActivity.numberOfInserts());
+        Assert.assertEquals(1, databaseActivity.numberOfUpdates());
+        Assert.assertEquals("EUR", lastApplied.getEl("currency.short_name"));
+    }
+
+
 }
