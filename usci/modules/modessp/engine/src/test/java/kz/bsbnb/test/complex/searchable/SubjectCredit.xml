@@ -1,0 +1,54 @@
+<batch>
+    <info>
+        <report_date>01.01.2018</report_date>
+        <creditor>
+            <code>TTTTKA</code>
+        </creditor>
+    </info>
+    <entities>
+        <credit>
+            <amount>5000.0</amount>
+            <maturity_date>01.01.2018</maturity_date>
+            <primary_contract>
+                <no>KZT-001</no>
+                <date>12.01.2018</date>
+            </primary_contract>
+            <currency>
+                <short_name>KZT</short_name>
+            </currency>
+            <subject>
+                <docs>
+                    <item>
+                        <doc_type>
+                            <code>06</code>
+                        </doc_type>
+                        <no>123456789100</no>
+                    </item>
+                    <item>
+                        <doc_type>
+                            <code>11</code>
+                        </doc_type>
+                        <no>123456789100</no>
+                    </item>
+                </docs>
+                <is_creditor>0</is_creditor>
+                <is_organization>0</is_organization>
+                <is_person>1</is_person>
+            </subject>
+        </credit>
+    </entities>
+    <refs>
+        <currency id="101">
+            <short_name>KZT</short_name>
+        </currency>
+        <currency id="102">
+            <short_name>EUR</short_name>
+        </currency>
+        <doc_type id="80">
+            <code>06</code>
+        </doc_type>
+        <doc_type id="81">
+            <code>11</code>
+        </doc_type>
+    </refs>
+</batch>

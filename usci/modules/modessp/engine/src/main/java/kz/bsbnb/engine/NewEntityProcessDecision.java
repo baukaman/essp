@@ -1,6 +1,7 @@
 package kz.bsbnb.engine;
 
 import kz.bsbnb.DataEntity;
+import kz.bsbnb.DataSet;
 import kz.bsbnb.SavingInfo;
 import kz.bsbnb.dao.DataEntityDao;
 import kz.bsbnb.exception.RefLoadException;
@@ -35,13 +36,23 @@ public class NewEntityProcessDecision extends Decision {
         for (String attribute : savingEntity.getAttributes()) {
             IMetaAttribute metaAttribute = metaClass.getMetaAttribute(attribute);
             IMetaType metaType = metaAttribute.getMetaType();
-            Object value = savingEntity.getBaseValue(attribute).getValue();
+            Object value = savingEntity.getDataValue(attribute).getValue();
 
             if(metaType.isComplex()) {
-                DataEntity childEntity = (DataEntity) value;
-                if(childEntity.getId() < 1) {
-                    NewEntityProcessDecision newEntityProcessDecision = context.getBean(NewEntityProcessDecision.class);
-                    newEntityProcessDecision.withSaving(childEntity).make();
+                if(metaType.isSet()) {
+                    DataSet childSet = (DataSet) value;
+                    for (DataEntity childEntity : childSet.getValues()) {
+                        if(childEntity.getId() < 1) {
+                            NewEntityProcessDecision newEntityProcessDecision = context.getBean(NewEntityProcessDecision.class);
+                            newEntityProcessDecision.withSaving(childEntity).make();
+                        }
+                    }
+                } else {
+                    DataEntity childEntity = (DataEntity) value;
+                    if (childEntity.getId() < 1) {
+                        NewEntityProcessDecision newEntityProcessDecision = context.getBean(NewEntityProcessDecision.class);
+                        newEntityProcessDecision.withSaving(childEntity).make();
+                    }
                 }
 
             }

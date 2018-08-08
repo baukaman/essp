@@ -39,6 +39,8 @@ public class RefsReader extends BaseReader {
                     readRef("pledges.pledge_type",localPart, id);
                 } else if(localPart.equals("currency")) {
                     readRef("currency", localPart, id);
+                } else if(localPart.equals("doc_type")) {
+                    readRef("subject.docs.doc_type", localPart, id);
                 }
 
             } else if(xmlEvent.isEndElement()) {

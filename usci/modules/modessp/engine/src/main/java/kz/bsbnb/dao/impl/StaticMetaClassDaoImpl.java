@@ -5,6 +5,7 @@ import kz.bsbnb.dao.MetaClassDao;
 import kz.bsbnb.usci.eav.model.meta.IMetaAttribute;
 import kz.bsbnb.usci.eav.model.meta.IMetaType;
 import kz.bsbnb.usci.eav.model.meta.impl.MetaClass;
+import kz.bsbnb.usci.eav.model.meta.impl.MetaSet;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -25,21 +26,38 @@ public class StaticMetaClassDaoImpl implements MetaClassDao {
 
     @Override
     public MetaClass load(long id) {
-        if(metaCredit.getId() == id)
-            return metaCredit;
+        MetaClass ans = recursive(metaCredit, id);
 
-        for (String attribute : metaCredit.getAttributeNames()) {
-            IMetaAttribute metaAttribute = metaCredit.getMetaAttribute(attribute);
+        if(ans != null)
+            return ans;
+
+        throw new RuntimeException("No such meta with id: " + id);
+    }
+
+    private MetaClass recursive(MetaClass metaClass, long id){
+        if(metaClass.getId() == id)
+            return metaClass;
+
+        for (String attribute : metaClass.getAttributeNames()) {
+            IMetaAttribute metaAttribute = metaClass.getMetaAttribute(attribute);
             IMetaType metaType = metaAttribute.getMetaType();
+            MetaClass ans = null;
             if(metaType.isComplex()) {
                 if(!metaType.isSet()) {
                     MetaClass childMeta = (MetaClass) metaType;
-                    if(childMeta.getId() == id)
-                        return childMeta;
+                    ans = recursive(childMeta, id);
+                } else {
+                    MetaSet metaSet = (MetaSet) metaType;
+                    MetaClass childType = ((MetaClass) metaSet.getMemberType());
+                    ans = recursive(childType, id);
                 }
             }
+
+            if(ans != null)
+                return ans;
         }
 
-        throw new RuntimeException("No such meta with id: " + id);
+        return null;
+
     }
 }

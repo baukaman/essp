@@ -61,7 +61,7 @@ public class SearchEntityDaoTest extends FunctionalTest {
 
         entityDao.setMetaSource(new StaticMetaClassDaoImpl(metaCredit));
         DataEntity credit = reader.read();
-        DataEntity primaryContract = (DataEntity) credit.getBaseValue("primary_contract").getValue();
+        DataEntity primaryContract = (DataEntity) credit.getDataValue("primary_contract").getValue();
         primaryContract.setReportDate(credit.getReportDate());
         primaryContract.setCreditorId(credit.getCreditorId());
         entityDao.insertNewEntity(primaryContract);

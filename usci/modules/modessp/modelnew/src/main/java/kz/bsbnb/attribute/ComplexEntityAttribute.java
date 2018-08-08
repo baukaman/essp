@@ -3,6 +3,8 @@ package kz.bsbnb.attribute;
 import kz.bsbnb.DataEntity;
 import kz.bsbnb.DataValue;
 
+import javax.sql.DataSource;
+
 public class ComplexEntityAttribute extends EntityAttribute {
     DataEntity entity;
 
@@ -17,7 +19,7 @@ public class ComplexEntityAttribute extends EntityAttribute {
     }
 
     @Override
-    public Object getColumnValue() {
+    public Object getColumnValue(DataSource dataSource) {
         return entity.getId();
     }
 

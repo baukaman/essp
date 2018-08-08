@@ -3,6 +3,8 @@ package kz.bsbnb.attribute;
 import kz.bsbnb.DataValue;
 import kz.bsbnb.usci.eav.model.meta.IMetaType;
 
+import javax.sql.DataSource;
+
 public class EntityAttribute {
     protected DataValue value;
     protected String attribute;
@@ -17,7 +19,7 @@ public class EntityAttribute {
         return attribute;
     }
 
-    public Object getColumnValue() {
+    public Object getColumnValue(DataSource dataSource) {
         return value.getValue();
     }
 

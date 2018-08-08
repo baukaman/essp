@@ -27,7 +27,7 @@ public class SearchEntityDao extends BaseDao implements ISearchEntityDao {
         for (String attribute : meta.getAttributeNames()) {
             IMetaAttribute metaAttribute = meta.getMetaAttribute(attribute);
             IMetaType metaType = metaAttribute.getMetaType();
-            DataValue baseValue = entity.getBaseValue(attribute);
+            DataValue baseValue = entity.getDataValue(attribute);
 
             if(baseValue == null)
                 continue;

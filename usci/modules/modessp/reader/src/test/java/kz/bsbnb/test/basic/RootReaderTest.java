@@ -24,6 +24,6 @@ public class RootReaderTest extends FunctionalTest {
         Assert.assertEquals(DataUtils.getDate("01.01.2018"), entity.getEl("maturity_date"));
         Assert.assertEquals("KZT-001", entity.getEl("primary_contract.no"));
         Assert.assertEquals(DataUtils.getDate("12.01.2018"), entity.getEl("primary_contract.date"));
-        Assert.assertEquals(2, entity.getEls("pledges").size());
+        Assert.assertEquals(2, entity.getEls("{count}pledges"));
     }
 }

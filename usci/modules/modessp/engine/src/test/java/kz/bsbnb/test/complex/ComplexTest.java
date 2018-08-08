@@ -53,7 +53,7 @@ public class ComplexTest extends EngineTestBase {
         //refEngine.setSearchEntityDao(new StaticSearchEntityDao(refs));
 
         DataEntity appliedEntity = bootstrapEngine.process(entity);
-        DataEntity currency = (DataEntity) appliedEntity.getBaseValue("currency").getValue();
+        DataEntity currency = (DataEntity) appliedEntity.getDataValue("currency").getValue();
         Assert.assertEquals(101, currency.getId());
         Assert.assertTrue(appliedEntity.getId() > 0);
     }

@@ -12,14 +12,17 @@ import kz.bsbnb.exception.RefLoadException;
 import kz.bsbnb.usci.eav.model.meta.IMetaAttribute;
 import kz.bsbnb.usci.eav.model.meta.IMetaType;
 import kz.bsbnb.usci.eav.model.meta.impl.MetaClass;
+import kz.bsbnb.usci.eav.model.meta.impl.MetaSet;
 import kz.bsbnb.usci.eav.model.meta.impl.MetaValue;
 import kz.bsbnb.usci.eav.util.DataUtils;
+import oracle.sql.ARRAY;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
 import java.util.*;
 
 @Component
@@ -61,7 +64,7 @@ public class DataEntityDao extends BaseDao {
         while(entityIterator.hasNext()) {
             EntityAttribute attribute = entityIterator.next();
             buf.append(attribute.getColumnName());
-            values.add(attribute.getColumnValue());
+            values.add(attribute.getColumnValue(jdbcTemplate.getDataSource()));
             if(entityIterator.hasNext())
                 buf.append(",");
         }
@@ -162,15 +165,37 @@ public class DataEntityDao extends BaseDao {
                     }
                 }
             //complex values
-            } else if (next.get(attribute + "_ID") != null) {
-                //collision with column
-                if(attribute.equalsIgnoreCase("creditor"))
-                    continue;
-                Long childId = ((BigDecimal) next.get(attribute + "_ID")).longValue();
-                if(metaType.isReference()) {
-                    entity.setDataValue(attribute, new DataComplexValue(refEngine.getById(childId, reportDate)));
+            } else {
+                if(!metaType.isSet()) {
+                    if(next.get(attribute+ "_ID") != null) {
+                        //collision with column
+                        if (attribute.equalsIgnoreCase("creditor"))
+                            continue;
+                        Long childId = ((BigDecimal) next.get(attribute + "_ID")).longValue();
+                        if (metaType.isReference()) {
+                            entity.setDataValue(attribute, new DataComplexValue(refEngine.getById(childId, reportDate)));
+                        } else {
+                            entity.setDataValue(attribute, new DataComplexValue(load(childId, creditorId, reportDate)));
+                        }
+                    }
                 } else {
-                    entity.setDataValue(attribute, new DataComplexValue(load(childId, creditorId, reportDate)));
+                    MetaClass childMeta = (MetaClass) ((MetaSet) metaType).getMemberType();
+                    if(next.get(attribute + "_IDS") != null) {
+                        Object o = next.get(attribute + "_IDS");
+                        ARRAY o1 = (ARRAY) o;
+                        DataSet dataSet = new DataSet(childMeta);
+                        entity.setDataValue(attribute, new DataComplexSet(dataSet));
+
+                        try {
+                            long[] longArray = o1.getLongArray();
+                            for (long l : longArray) {
+                                dataSet.add(load(l, creditorId, reportDate));
+                            }
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
                 }
             }
         }
@@ -206,7 +231,7 @@ public class DataEntityDao extends BaseDao {
         while(iterator.hasNext()) {
             EntityAttribute entityAttribute = iterator.next();
             buf.append(entityAttribute.getColumnName() + " = ?");
-            list.add(entityAttribute.getColumnValue());
+            list.add(entityAttribute.getColumnValue(jdbcTemplate.getDataSource()));
             if(iterator.hasNext())
                 buf.append(",");
         }

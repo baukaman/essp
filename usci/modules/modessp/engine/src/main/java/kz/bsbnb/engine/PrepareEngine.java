@@ -35,18 +35,18 @@ public class PrepareEngine {
         for (String attribute : metaClass.getAttributeNames()) {
             IMetaAttribute metaAttribute = metaClass.getMetaAttribute(attribute);
             IMetaType metaType = metaAttribute.getMetaType();
-            DataValue baseValue = entity.getBaseValue(attribute);
+            DataValue dataValue = entity.getDataValue(attribute);
 
             if (!metaAttribute.isKey())
                 continue;
 
-            if(baseValue == null) {
+            if(dataValue == null) {
                 childKeysFound = false;
                 continue;
             }
 
             if(metaType.isComplex()) {
-                DataEntity childEntity = process((DataEntity) baseValue.getValue());
+                DataEntity childEntity = process((DataEntity) dataValue.getValue());
                 ret.setDataValue(attribute, new DataComplexValue(childEntity));
                 if(childEntity.getId() < 1)
                     childKeysFound = false;

@@ -21,4 +21,8 @@ public class DataSet {
     public void add(DataEntity entity) {
         values.add(entity);
     }
+
+    public Set<DataEntity> getValues() {
+        return values;
+    }
 }

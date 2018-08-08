@@ -12,6 +12,7 @@
         <property name="minIdle" value="${jdbc.minIdle}"/>
         <property name="maxActive" value="${jdbc.maxActive}"/>
         <property name="maxIdle" value="${jdbc.maxIdle}"/>
+        <property name="accessToUnderlyingConnectionAllowed" value="true" />
     </bean>
 
     <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
